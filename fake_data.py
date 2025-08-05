@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from app.enumerations import *
 from app.db import init_db, get_session
+from app.security import *
 
 
 # créee une instance de Faker
@@ -20,7 +21,7 @@ def create_fake_users(n):
             last_name=fake.last_name(), 
             email=fake.unique.email(),  
             role=random.choice(list(Role)).value,  
-            password_hashed="motdepasse",  
+            password_hashed=hash_password("motdepasse"),  
             address_user=fake.unique.address(), 
             phone=fake.unique.phone_number(),
             created_at = fake.date_time() 
