@@ -2,9 +2,13 @@ from faker import Faker
 from app.models import User, Product, Order, OrderItem, Delivery
 import random
 from datetime import datetime
+from app.enumerations import *
+from app.db import init_db, get_session
+
 
 # créee une instance de Faker
 fake = Faker()
+fake.unique.clear()
 Faker.seed(0)  # pour avoir les mêmes données à chaque exécution
 random.seed(0)
 
@@ -15,9 +19,9 @@ def create_fake_users(n):
             first_name=fake.first_name(),  
             last_name=fake.last_name(), 
             email=fake.unique.email(),  
-            role=random.choice(["admin", "employee", "client"]),  
+            role=random.choice(list(Role)).value,  
             password_hashed="motdepasse",  
-            address_user=fake.unique.email(), 
+            address_user=fake.unique.address(), 
             phone=fake.unique.phone_number(),
             created_at = fake.date_time() 
             
@@ -31,7 +35,7 @@ def create_fake_products(n):
         product = Product(
             name=fake.word().capitalize(),  
             unit_price=round(random.uniform(10, 100), 2),  # prix entre 10€ et 100€ avec deux chiffres apres la virgule
-            category=random.choice(["Entrée", "Plat principal", "Dessert", "Boisson", "Snack", "Menu enfant"]),  
+            category=random.choice(list(Category)).value,  
             description=fake.text(max_nb_chars=50),  # petite description
             stock=random.randint(10, 100), # stock entre 10 et 100 unités
             created_at =fake.date_time()
@@ -44,7 +48,7 @@ def create_fake_deliveries(n):
     for _ in range(n):
         delivery = Delivery(
             address_delivery=fake.address(),  
-            status=random.choice(["En cours", "Délivrée"]),
+            status=random.choice(list(StatusDelivery)).value,
             created_at = fake.date_time()
         )
         deliveries.append(delivery)
@@ -58,7 +62,7 @@ def create_fake_orders(users, deliveries, n):
         order = Order(
             user_id=user.id,  
             total_amount=0.0,  
-            status=random.choice(["En préparation", "Prete", "Servie"]),
+            status=random.choice(list(Status)).value,
             created_at = fake.date_time(),  
             delivery_id=delivery.id  
         )
@@ -83,4 +87,31 @@ def create_fake_order_items(orders, products):
 
     return order_items
 
+def reset_db(session):
+    session.query(OrderItem).delete()
+    session.query(Order).delete()
+    session.query(Delivery).delete()
+    session.query(Product).delete()
+    session.query(User).delete()
+    session.commit()
 
+
+
+if __name__ == "__main__":
+    init_db()
+    with get_session() as session:
+        reset_db(session)
+        users = create_fake_users(5)
+        products = create_fake_products(10)
+        deliveries = create_fake_deliveries(3)
+
+        session.add_all(users + products + deliveries)
+        session.commit()  # Génère IDs
+
+        orders = create_fake_orders(users, deliveries, 7)
+        session.add_all(orders)
+        session.commit()  # Génère IDs pour orders
+
+        order_items = create_fake_order_items(orders, products)  
+        session.add_all(order_items)
+        session.commit()
