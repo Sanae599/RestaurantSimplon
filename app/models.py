@@ -56,7 +56,6 @@ class OrderItem(SQLModel, table=True):
     order_id: int = Field(foreign_key="order.id")
     product_id: int = Field(foreign_key="product.id")
     quantity: int
-    unit_price: float
     
     order: Optional[Order] = Relationship(back_populates="order_items")
     product: Optional[Product] = Relationship(back_populates="order_items")
