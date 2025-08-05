@@ -46,3 +46,16 @@ class ProductRead(SQLModel):
     created_at: datetime
 
     model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
+
+class ProductUpdate(SQLModel):
+    name: Optional[str] = None
+    unit_price: Optional[float] = None
+    category: Optional[str] = None
+    description: Optional[str] = None
+    stock: Optional[int] = None
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        validate_assignment=True,
+        use_enum_values=True
+    )
