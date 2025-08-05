@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.db import engine, init_db
 from app.models import SQLModel
+from app.routers import user
 
 app = FastAPI()
 
@@ -14,4 +15,5 @@ def on_startup():
 def read_root():
     return {"message": "API RestauSimplon fonctionne bien"}
 
-#Pour nos futurs endpoints (routers, routes d'auth, CRUD, etc.)
+#Pour nos futurs endpoints (routers, routes d'auth, CRUD, et
+app.include_router(user.router)
