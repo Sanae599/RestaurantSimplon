@@ -5,8 +5,6 @@ from pydantic import ConfigDict, field_validator
 
 #Création d'une commande (POST)
 class OrderItemCreate(SQLModel):
-    order_id: int
-    product_id: int
     quantity: int
 
     model_config = ConfigDict(
@@ -20,7 +18,7 @@ class OrderItemCreate(SQLModel):
     @field_validator('quantity')
     def validate_quantity(cls, value: int) -> int:
         if value <= 0:
-            raise ValueError("La quantité doit être sup à 0.")
+            raise ValueError("La quantité doit être égal ou sup à 1.")
         return value
 
 class OrderItemRead(SQLModel):
@@ -31,8 +29,6 @@ class OrderItemRead(SQLModel):
     model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
 class OrderItemUpdate(SQLModel):
-    order_id: Optional[int] = None
-    product_id: Optional[int] = None
     quantity: Optional[int] = None
 
     model_config = ConfigDict(
@@ -40,3 +36,8 @@ class OrderItemUpdate(SQLModel):
         validate_assignment=True,
         use_enum_values=True
     )
+    @field_validator('quantity')
+    def validate_quantity(cls, value: int) -> int:
+        if value is not None and value <= 0:
+            raise ValueError("La quantité doit être égal ou sup à 1.")
+        return value

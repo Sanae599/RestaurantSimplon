@@ -7,7 +7,7 @@ from datetime import datetime
 class DeliveryCreate(SQLModel):
     address_delivery: Annotated[str, StringConstraints(max_length=50)]
     status: str # enum ?
-    created_at: datetime
+    created_at: datetime = datetime.now()
 
     model_config = ConfigDict(
         # vire espace avant après

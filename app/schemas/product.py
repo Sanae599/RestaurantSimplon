@@ -13,7 +13,6 @@ class ProductCreate(SQLModel):
     stock: int
     created_at: datetime = datetime.now()
 
-
     model_config = ConfigDict(
         # vire espace avant après
         str_strip_whitespace=True,
