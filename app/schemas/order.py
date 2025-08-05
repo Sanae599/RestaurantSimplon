@@ -1,11 +1,11 @@
 from typing import Optional
 from sqlmodel import SQLModel
-from pydantic import ConfigDict, BaseModel, field_validator
+from pydantic import ConfigDict, field_validator
 #from app.enumerations import Category
 from datetime import datetime
 
 #Création d'une commande (POST)
-class OrderCreate(BaseModel):
+class OrderCreate(SQLModel):
     user_id: int
     total_amount: float
     status: str
@@ -20,7 +20,7 @@ class OrderCreate(BaseModel):
         use_enum_values=True
     )
 
-class OrderRead(BaseModel):
+class OrderRead(SQLModel):
     id: int
     user_id: int
     total_amount: float
@@ -30,7 +30,7 @@ class OrderRead(BaseModel):
 
     model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
-class OrderUpdate(BaseModel):
+class OrderUpdate(SQLModel):
     total_amount: Optional[float] = None
     status: Optional[str] = None
     delivery_id: Optional[int] = None
