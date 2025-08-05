@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.db import engine, init_db
-from app.models import SQLModel
+from db import engine, init_db, get_session
+from fake_data import *
 
 app = FastAPI()
 
@@ -8,6 +8,23 @@ app = FastAPI()
 @app.on_event("startup")
 def on_startup():
     init_db()
+    with get_session() as session:
+            reset_db(session)
+            users = create_fake_users(5)
+            products = create_fake_products(10)
+            deliveries = create_fake_deliveries(3)
+
+            session.add_all(users + products + deliveries)
+            session.commit()  # Pour générer les IDs
+
+            orders = create_fake_orders(users, deliveries, 7)
+            session.add_all(orders)
+            session.commit()
+
+            order_items = create_fake_order_items(orders, products)
+            session.add_all(order_items)
+            session.commit()
+    
 
 # Endpoint de test pour vérifier que l'API tourne bien
 @app.get("/")

@@ -1,10 +1,10 @@
 from faker import Faker
-from app.models import User, Product, Order, OrderItem, Delivery
+from models import User, Product, Order, OrderItem, Delivery
 import random
 from datetime import datetime
-from app.enumerations import *
-from app.db import init_db, get_session
-from app.security import *
+from enumerations import *
+from db import init_db, get_session
+from security import *
 
 
 # créee une instance de Faker
@@ -97,22 +97,3 @@ def reset_db(session):
     session.commit()
 
 
-
-if __name__ == "__main__":
-    init_db()
-    with get_session() as session:
-        reset_db(session)
-        users = create_fake_users(5)
-        products = create_fake_products(10)
-        deliveries = create_fake_deliveries(3)
-
-        session.add_all(users + products + deliveries)
-        session.commit()  # Génère IDs
-
-        orders = create_fake_orders(users, deliveries, 7)
-        session.add_all(orders)
-        session.commit()  # Génère IDs pour orders
-
-        order_items = create_fake_order_items(orders, products)  
-        session.add_all(order_items)
-        session.commit()
