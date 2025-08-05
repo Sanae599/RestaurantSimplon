@@ -18,10 +18,12 @@ def create_fake_users(n):
             role=random.choice(["admin", "employee", "client"]),  
             password_hashed="motdepasse",  
             address_user=fake.unique.email(), 
-            phone=fake.unique.phone_number()  
+            phone=fake.unique.phone_number(),
+            created_at = fake.date_time() 
+            
         )
         users.append(user)
-    return None
+    return users
 
 def create_fake_products(n):
     products = []
@@ -31,7 +33,8 @@ def create_fake_products(n):
             unit_price=round(random.uniform(10, 100), 2),  # prix entre 10€ et 100€ avec deux chiffres apres la virgule
             category=random.choice(["Entrée", "Plat principal", "Dessert", "Boisson", "Snack", "Menu enfant"]),  
             description=fake.text(max_nb_chars=50),  # petite description
-            stock=random.randint(10, 100)  # stock entre 10 et 100 unités
+            stock=random.randint(10, 100), # stock entre 10 et 100 unités
+            created_at =fake.date_time()
         )
         products.append(product)
     return products
@@ -41,7 +44,8 @@ def create_fake_deliveries(n):
     for _ in range(n):
         delivery = Delivery(
             address_delivery=fake.address(),  
-            status=random.choice(["En cours", "Délivrée"])  
+            status=random.choice(["En cours", "Délivrée"]),
+            created_at = fake.date_time()
         )
         deliveries.append(delivery)
     return deliveries
@@ -71,7 +75,7 @@ def create_fake_order_items(orders, products):
             order_item = OrderItem(
                 order_id=order.id,
                 product_id=product.id,
-                quantity=quantity,
+                quantity=quantity
             )
 
             order_items.append(order_item)
