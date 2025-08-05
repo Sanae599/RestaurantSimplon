@@ -8,7 +8,6 @@ from app.schemas.user_schemas import (
     PasswordReset,
 )
 
-
 def get_one_user_by_id(session: Session, user_id: int):
     user = session.get(User, user_id)
     if not user:

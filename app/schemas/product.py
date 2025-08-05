@@ -1,0 +1,48 @@
+from typing import Optional
+from sqlmodel import SQLModel
+from pydantic import ConfigDict, field_validator
+#from app.enumerations import Category
+from datetime import datetime
+
+#Création d'un produit (POST)
+class ProductCreate(SQLModel):
+    name: str
+    unit_price: float
+    category: str # enum ?
+    description: Optional[str]
+    stock: int
+    created_at: datetime = datetime.now()
+
+
+    model_config = ConfigDict(
+        # vire espace avant après
+        str_strip_whitespace=True,
+        # validation à l'init du model et à l'affectation des valeurs
+        validate_assignment=True,
+        # use enum
+        use_enum_values=True
+    )
+
+    @field_validator('unit_price')
+    # cls pour accèder à l'attribut de la class
+    def validate_unit_price(cls, value: float):
+        if value <= 0:
+            raise ValueError("Le prix doit être sup à 0€")
+        return value
+    
+    @field_validator('stock')
+    def validate_stock(cls, value: int):
+        if value < 0:
+            raise ValueError("Le stock ne peut pas être inf à 0.")
+        return value
+    
+class ProductRead(SQLModel):
+    id: int
+    name: str
+    unit_price: float
+    category: str
+    description: str
+    stock: int
+    created_at: datetime
+
+    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
