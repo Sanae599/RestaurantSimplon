@@ -52,6 +52,7 @@ class UserUpdate(SQLModel):
     role: Optional[Role] = None
     address_user: Optional[str] = None
     phone: Optional[str] = None
+    password: Optional[str] = None
 
     model_config = ConfigDict(
         str_strip_whitespace=True,

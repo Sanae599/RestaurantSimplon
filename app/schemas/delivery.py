@@ -2,11 +2,12 @@ from typing import Optional, Annotated
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator, StringConstraints
 from datetime import datetime
+from enumerations import StatusDelivery
 
 #Création d'une livraison (POST)
 class DeliveryCreate(SQLModel):
     address_delivery: Annotated[str, StringConstraints(max_length=50)]
-    status: str # enum ?
+    status: StatusDelivery
     created_at: datetime = datetime.now()
 
     model_config = ConfigDict(
@@ -21,14 +22,14 @@ class DeliveryCreate(SQLModel):
 class DeliveryRead(SQLModel):
     id: int
     address_delivery: Annotated[str, StringConstraints(max_length=50)]
-    status: str # enum ?
+    status: StatusDelivery
     created_at: datetime
 
     model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
 class DeliveryUpdate(SQLModel):
     address_delivery: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
-    status: Optional[str] = None
+    status: Optional[StatusDelivery] = None
 
     model_config = ConfigDict(
         str_strip_whitespace=True,

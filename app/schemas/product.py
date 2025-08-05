@@ -1,14 +1,14 @@
 from typing import Optional, Annotated
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator, StringConstraints
-#from app.enumerations import Category
 from datetime import datetime
+from enumerations import Category
 
 #Création d'un produit (POST)
 class ProductCreate(SQLModel):
     name: Annotated[str, StringConstraints(max_length=50)]
     unit_price: float
-    category: str # enum ?
+    category: Category 
     description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
     created_at: datetime = datetime.now()
@@ -39,7 +39,7 @@ class ProductRead(SQLModel):
     id: int
     name: Annotated[str, StringConstraints(max_length=50)]
     unit_price: float
-    category: str
+    category: Category
     description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
     created_at: datetime
@@ -49,7 +49,7 @@ class ProductRead(SQLModel):
 class ProductUpdate(SQLModel):
     name: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
     unit_price: Optional[float] = None
-    category: Optional[Annotated[str, StringConstraints(max_length=200)]] = None
+    category: Optional[Category] = None
     description: Optional[str] = None
     stock: Optional[int] = None
 
