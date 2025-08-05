@@ -1,15 +1,15 @@
-from typing import Optional
+from typing import Optional, Annotated
 from sqlmodel import SQLModel
-from pydantic import ConfigDict, field_validator
+from pydantic import ConfigDict, field_validator, StringConstraints
 #from app.enumerations import Category
 from datetime import datetime
 
 #Création d'un produit (POST)
 class ProductCreate(SQLModel):
-    name: str
+    name: Annotated[str, StringConstraints(max_length=50)]
     unit_price: float
     category: str # enum ?
-    description: Optional[str]
+    description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
     created_at: datetime = datetime.now()
 
@@ -38,19 +38,19 @@ class ProductCreate(SQLModel):
     
 class ProductRead(SQLModel):
     id: int
-    name: str
+    name: Annotated[str, StringConstraints(max_length=50)]
     unit_price: float
     category: str
-    description: str
+    description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
     created_at: datetime
 
     model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
 class ProductUpdate(SQLModel):
-    name: Optional[str] = None
+    name: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
     unit_price: Optional[float] = None
-    category: Optional[str] = None
+    category: Optional[Annotated[str, StringConstraints(max_length=200)]] = None
     description: Optional[str] = None
     stock: Optional[int] = None
 
