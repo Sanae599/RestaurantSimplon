@@ -96,4 +96,18 @@ def reset_db(session):
     session.query(User).delete()
     session.commit()
 
+def add_fake_data(session):
+    users = create_fake_users(5)
+    products = create_fake_products(10)
+    deliveries = create_fake_deliveries(3)
 
+    session.add_all(users + products + deliveries)
+    session.commit()  # Pour générer les IDs
+
+    orders = create_fake_orders(users, deliveries, 7)
+    session.add_all(orders)
+    session.commit()
+
+    order_items = create_fake_order_items(orders, products)
+    session.add_all(order_items)
+    session.commit()
