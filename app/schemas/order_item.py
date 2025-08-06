@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator
-#from app.enumerations import Category
+from enumerations import Category
 
 #Création d'une commande (POST)
 class OrderItemCreate(SQLModel):

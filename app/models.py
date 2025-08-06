@@ -34,27 +34,26 @@ class Delivery(SQLModel, table=True):
     address_delivery: str
     status: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    
+    order_id: Optional[int] = Field(default=None, foreign_key="order.id")
+
     orders: List["Order"] = Relationship(back_populates="delivery")
 
 # ORDER
 class Order(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    user_id: int = Field(default=None,foreign_key="user.id")
     total_amount: float
     status: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    delivery_id: Optional[int] = Field(default=None, foreign_key="delivery.id")
     
     user: Optional[User] = Relationship(back_populates="orders")
     delivery: Optional[Delivery] = Relationship(back_populates="orders")
     order_items: List["OrderItem"] = Relationship(back_populates="order")
 
-# ORDER ITEMS
+# ORDER ITEMS 
 class OrderItem(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    order_id: int = Field(foreign_key="order.id")
-    product_id: int = Field(foreign_key="product.id")
+    order_id: int = Field(primary_key=True,foreign_key="order.id")
+    product_id: int = Field(primary_key=True,foreign_key="product.id")
     quantity: int
     
     order: Optional[Order] = Relationship(back_populates="order_items")
