@@ -2,7 +2,7 @@ import re
 from typing import Annotated, Optional
 from sqlmodel import SQLModel
 from pydantic import EmailStr, ConfigDict, field_validator, StringConstraints
-from app.enumerations import Role
+from enumerations import Role
 from datetime import datetime
 
 #Création d'un utilisateur (POST)
