@@ -28,7 +28,7 @@ class UserCreate(SQLModel):
 
     @field_validator("phone")
     def validate_phone(cls, value: str) -> str:
-        # le num commence par 0 + 9 chiffres
+        # le num commence par '0' + 9 chiffres
         if not re.match(r'^0[1-9](\d{2}){4}$', value):
             raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
         return value
@@ -52,6 +52,7 @@ class UserUpdate(SQLModel):
     role: Optional[Role] = None
     address_user: Optional[str] = None
     phone: Optional[str] = None
+    password: Optional[str] = None
 
     model_config = ConfigDict(
         str_strip_whitespace=True,
