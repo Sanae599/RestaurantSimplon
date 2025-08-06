@@ -14,8 +14,7 @@ class UserCreate(SQLModel):
     password_hashed: str # = None ?
     address_user: str
     phone: str
-    created_at: datetime = datetime.now()
-
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -29,21 +28,20 @@ class UserCreate(SQLModel):
     @field_validator("phone")
     def validate_phone(cls, value: str) -> str:
         # le num commence par '0' + 9 chiffres
-        if not re.match(r'^0[1-9](\d{2}){4}$', value):
+        if not re.match(r'^0[0-9](\d{2}){4}$', value):
             raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
         return value
+
     
 class UserRead(SQLModel):
     id: int
-    first_name: Annotated[str, StringConstraints(max_length=50)]
-    last_name: Annotated[str, StringConstraints(max_length=50)]
+    first_name: str
+    last_name: str
     email: EmailStr
     role: Role
     address_user: str
     phone: str
-    created_at: datetime
-
-    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
+    created_at: datetime = datetime.now()
 
 class UserUpdate(SQLModel):
     firstname:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
@@ -59,5 +57,9 @@ class UserUpdate(SQLModel):
         validate_assignment=True,
         use_enum_values=True
     )
-
-# PasswordUpdate
+    @field_validator("phone")
+    def validate_phone(cls, value: str) -> str:
+        # le num commence par '0' + 9 chiffres
+        if not re.match(r'^0[0-9](\d{2}){4}$', value):
+            raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
+        return value

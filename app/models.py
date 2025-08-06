@@ -1,6 +1,13 @@
 from typing import Optional, List
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column, ForeignKey
+
+
+# https://docs-sqlalchemy.readthedocs.io/ko/latest/orm/cascades.html
+# https://stackoverflow.com/questions/5033547/sqlalchemy-cascade-delete
+# https://github.com/fastapi/sqlmodel/issues/213?utm_source=chatgpt.com%3Futm_source%3Dchatgpt.com
+
 
 # USER
 class User(SQLModel, table=True):
@@ -14,7 +21,7 @@ class User(SQLModel, table=True):
     phone: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     
-    orders: List["Order"] = Relationship(back_populates="user")
+    orders: List["Order"] = Relationship(back_populates="user", cascade_delete=True)
 
 # PRODUCT
 class Product(SQLModel, table=True):
@@ -26,35 +33,52 @@ class Product(SQLModel, table=True):
     stock: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     
-    order_items: List["OrderItem"] = Relationship(back_populates="product")
-
-# DELIVERY
-class Delivery(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    address_delivery: str
-    status: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    order_id: Optional[int] = Field(default=None, foreign_key="order.id")
-
-    orders: List["Order"] = Relationship(back_populates="delivery")
+    order_items: List["OrderItem"] = Relationship(back_populates="product", cascade_delete=True)
 
 # ORDER
 class Order(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(default=None,foreign_key="user.id")
+    user_id: int = Field(foreign_key="user.id")
     total_amount: float
     status: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     
     user: Optional[User] = Relationship(back_populates="orders")
-    delivery: Optional[Delivery] = Relationship(back_populates="orders")
-    order_items: List["OrderItem"] = Relationship(back_populates="order")
+
+    delivery: Optional["Delivery"] = Relationship(
+        back_populates="order",
+        sa_relationship_kwargs={
+            # delete all children 
+            "cascade": "all, delete-orphan",
+            # 1 delivery appartien à 1 seul order
+            "single_parent": True,
+            # relation one one
+            "uselist": False
+        }
+    )
+
+    order_items: List["OrderItem"] = Relationship(back_populates="order", cascade_delete=True)
+
+# DELIVERY
+class Delivery(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    order_id: Optional[int] = Field(foreign_key="order.id", unique=True, nullable=False)
+    address_delivery: str
+    status: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+
+    order: Order = Relationship(back_populates="delivery")
 
 # ORDER ITEMS 
 class OrderItem(SQLModel, table=True):
-    order_id: int = Field(primary_key=True,foreign_key="order.id")
-    product_id: int = Field(primary_key=True,foreign_key="product.id")
+    order_id: int = Field(
+        sa_column=Column(ForeignKey("order.id", ondelete="CASCADE"), primary_key=True)
+    )
+    product_id: int = Field(
+        sa_column=Column(ForeignKey("product.id", ondelete="CASCADE"), primary_key=True)
+    )
     quantity: int
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     
     order: Optional[Order] = Relationship(back_populates="order_items")
     product: Optional[Product] = Relationship(back_populates="order_items")

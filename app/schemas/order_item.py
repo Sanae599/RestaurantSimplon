@@ -1,10 +1,13 @@
 from typing import Optional
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator
+from datetime import datetime
 from enumerations import Category
 
 #Création d'une commande (POST)
 class OrderItemCreate(SQLModel):
+    order_id: int
+    product_id: int
     quantity: int
 
     model_config = ConfigDict(
@@ -25,8 +28,7 @@ class OrderItemRead(SQLModel):
     order_id: int
     product_id: int
     quantity: int
-
-    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
+    created_at: datetime = datetime.now()
 
 class OrderItemUpdate(SQLModel):
     quantity: Optional[int] = None

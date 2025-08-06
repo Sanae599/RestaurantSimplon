@@ -11,7 +11,6 @@ class ProductCreate(SQLModel):
     category: Category 
     description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
-    created_at: datetime = datetime.now()
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -37,20 +36,18 @@ class ProductCreate(SQLModel):
     
 class ProductRead(SQLModel):
     id: int
-    name: Annotated[str, StringConstraints(max_length=50)]
+    name: str
     unit_price: float
     category: Category
-    description: Optional[Annotated[str, StringConstraints(max_length=200)]]
+    description: str
     stock: int
     created_at: datetime
-
-    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
 class ProductUpdate(SQLModel):
     name: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
     unit_price: Optional[float] = None
     category: Optional[Category] = None
-    description: Optional[str] = None
+    description: Optional[Annotated[str, StringConstraints(max_length=200)]] = None
     stock: Optional[int] = None
 
     model_config = ConfigDict(
