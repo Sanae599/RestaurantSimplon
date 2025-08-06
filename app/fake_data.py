@@ -44,28 +44,28 @@ def create_fake_products(n):
         products.append(product)
     return products
 
-def create_fake_deliveries(n):
+def create_fake_deliveries(orders,n):
     deliveries = []
     for _ in range(n):
+        order = random.choice(orders)
         delivery = Delivery(
             address_delivery=fake.address(),  
             status=random.choice(list(StatusDelivery)).value,
-            created_at = fake.date_time()
+            created_at = fake.date_time(),
+            order_id=order.id,
         )
         deliveries.append(delivery)
     return deliveries
 
-def create_fake_orders(users, deliveries, n):
+def create_fake_orders(users, n):
     orders = []
     for _ in range(n):
         user = random.choice(users)  
-        delivery = random.choice(deliveries)  
         order = Order(
             user_id=user.id,  
             total_amount=0.0,  
             status=random.choice(list(Status)).value,
             created_at = fake.date_time(),  
-            delivery_id=delivery.id  
         )
         orders.append(order)
     return orders
@@ -99,15 +99,18 @@ def reset_db(session):
 def add_fake_data(session):
     users = create_fake_users(5)
     products = create_fake_products(10)
-    deliveries = create_fake_deliveries(3)
 
-    session.add_all(users + products + deliveries)
+    session.add_all(users + products)
     session.commit()  # Pour générer les IDs
 
-    orders = create_fake_orders(users, deliveries, 7)
+    orders = create_fake_orders(users, 7)
     session.add_all(orders)
     session.commit()
 
     order_items = create_fake_order_items(orders, products)
     session.add_all(order_items)
+    session.commit()
+
+    deliveries = create_fake_deliveries(orders, 3)
+    session.add_all(deliveries)
     session.commit()

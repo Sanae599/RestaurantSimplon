@@ -4,7 +4,7 @@ from db import get_session
 from models import User
 from schemas.user import UserRead, UserCreate, UserUpdate 
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/user", tags=["user"])
 
 #À activer plus tard pour récupérer le user courant (nécessite authentification JWT)
 # @router.get("/me", response_model=UserRead)
@@ -49,7 +49,7 @@ def patch_utilisateur(user_id: int, user: UserUpdate, session: Session = Depends
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     #On modifie uniquement les champs reçus (qui ne sont pas None)
-    update_data = user.dict(exclude_unset=True)
+    update_data = user.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(utilisateur, key, value)
     session.commit()
