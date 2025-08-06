@@ -6,9 +6,10 @@ from enumerations import StatusDelivery
 
 #Création d'une livraison (POST)
 class DeliveryCreate(SQLModel):
-    address_delivery: Annotated[str, StringConstraints(max_length=50)]
+    order_id: int
+    address_delivery: Annotated[str, StringConstraints(max_length=200)]
     status: StatusDelivery
-    created_at: datetime = datetime.now()
+
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -21,11 +22,10 @@ class DeliveryCreate(SQLModel):
 
 class DeliveryRead(SQLModel):
     id: int
-    address_delivery: Annotated[str, StringConstraints(max_length=50)]
+    address_delivery: str
     status: StatusDelivery
     created_at: datetime
-
-    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
+    order_id: int
 
 class DeliveryUpdate(SQLModel):
     address_delivery: Optional[Annotated[str, StringConstraints(max_length=50)]] = None

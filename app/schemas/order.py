@@ -9,7 +9,6 @@ class OrderCreate(SQLModel):
     user_id: int
     total_amount: float
     status: Status
-    delivery_id: Optional[int] = None
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -26,11 +25,7 @@ class OrderRead(SQLModel):
     total_amount: float
     status: Status
     created_at: datetime
-    delivery_id: Optional[int] = None
-
-    model_config = ConfigDict(str_strip_whitespace=True,use_enum_values=True)
 
 class OrderUpdate(SQLModel):
     total_amount: Optional[float] = None
     status: Optional[Status] = None
-    delivery_id: Optional[int] = None
