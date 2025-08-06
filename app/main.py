@@ -1,11 +1,8 @@
 from fastapi import FastAPI
-#from app.db import engine, init_db
-#from app.models import SQLModel
-#from app.routers import user
-
 from db import engine, init_db, get_session
 from fake_data import *
-from routers import user
+from routers import user , order_item
+
 
 app = FastAPI()
 
@@ -25,3 +22,4 @@ def read_root():
 
 #Pour nos futurs endpoints (routers, routes d'auth, CRUD, et
 app.include_router(user.router)
+app.include_router(order_item.router)
