@@ -4,6 +4,7 @@ from fake_data import *
 from routers import user, product, order, delivery
 
 
+
 app = FastAPI()
 
 @app.on_event("startup")
@@ -22,6 +23,6 @@ def read_root():
 #Pour nos futurs endpoints (routers, routes d'auth, CRUD, et
 app.include_router(user.router)
 app.include_router(product.router)
-#app.include_router(order_item.router)
 app.include_router(order.router)
 app.include_router(delivery.router)
+app.include_router(order_item.router)
