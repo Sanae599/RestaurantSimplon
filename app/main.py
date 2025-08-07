@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from db import engine, init_db, get_session
 from fake_data import *
-from routers import user, product, order, delivery
-
-
+from routers import user, product, order, delivery, order_item
 
 app = FastAPI()
 

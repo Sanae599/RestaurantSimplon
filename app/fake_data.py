@@ -34,13 +34,15 @@ def create_fake_users(n):
             last_name=fake.last_name(), 
             email=fake.unique.email(),  
             role=random.choice(list(Role)).value,  
-            password_hashed=hash_password("Motdepasse111111111!"),  
+            password_hashed = hash_password(fake.password()),
+            #password_hashed=hash_password("Motdepasse111111111!"),  
             address_user=fake.unique.address(), 
             phone=generate_fr_phone(),
             created_at = fake.date_time()
         )
         # convertit modèle pydantic à modèle orm
         user = User(**user_data.model_dump())  # transformer en modèle SQLModel
+
         users.append(user)
     return users
 
@@ -49,7 +51,7 @@ def create_fake_products(n):
     for _ in range(n):
         product_data = ProductCreate(
             name=fake.word().capitalize(),  
-            unit_price=random.uniform(10, 100),  # prix entre 10€ et 100€ avec deux chiffres apres la virgule
+            unit_price=round(random.uniform(10, 100),2),  # prix entre 10€ et 100€ avec deux chiffres apres la virgule
             category=random.choice(list(Category)).value,  
             description=remove_dot(fake.text(max_nb_chars=50)),
             stock=random.randint(10, 100), # stock entre 10 et 100 unités
@@ -109,7 +111,7 @@ def create_fake_order_items(orders, products):
             #print(order_item)
             order_items.append(order_item)
             total_amount += quantity * product.unit_price
-        order.total_amount = round(total_amount, 2)
+        order.total_amount = round(total_amount,2)
     return order_items
 
 def reset_db(session):

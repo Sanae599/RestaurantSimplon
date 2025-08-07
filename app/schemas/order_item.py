@@ -9,6 +9,7 @@ class OrderItemCreate(SQLModel):
     order_id: int
     product_id: int
     quantity: int
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -28,7 +29,7 @@ class OrderItemRead(SQLModel):
     order_id: int
     product_id: int
     quantity: int
-    created_at: datetime = datetime.now()
+    created_at: datetime
 
 class OrderItemUpdate(SQLModel):
     quantity: Optional[int] = None

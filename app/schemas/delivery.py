@@ -9,6 +9,7 @@ class DeliveryCreate(SQLModel):
     order_id: int
     address_delivery: Annotated[str, StringConstraints(max_length=200)]
     status: StatusDelivery
+    created_at: Optional[datetime] = None
 
 
     model_config = ConfigDict(
