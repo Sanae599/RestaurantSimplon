@@ -34,8 +34,7 @@ def creer_un_utilisateur(user: UserCreate, session: Session = Depends(get_sessio
         last_name=user.last_name,
         email=user.email,
         role=user.role,
-        #password_hashed = hash_password(user.password), #À sécuriser plus tard 
-        password = user.password,
+        password_hashed = hash_password(user.password), #À sécuriser plus tard 
         address_user=user.address_user,
         phone=user.phone,
     )
