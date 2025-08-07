@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from db import engine, init_db, get_session
 from fake_data import *
-from routers import user, product, order, delivery, order_item
+from routers import authentification,user, product, order, delivery, order_item
 
 app = FastAPI()
 
@@ -19,6 +19,7 @@ def read_root():
     return {"message": "API RestauSimplon fonctionne bien"}
 
 #Pour nos futurs endpoints (routers, routes d'auth, CRUD, et
+app.include_router(authentification.router)
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
