@@ -12,7 +12,7 @@ class UserCreate(SQLModel):
     last_name: Annotated[str, StringConstraints(max_length=50)]
     email: EmailStr
     role: Role
-    password : str = User.password_hashed # = None ? 
+    password : str # = None ? 
     address_user: str
     phone: str
     created_at: Optional[datetime] = None
