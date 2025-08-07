@@ -1,6 +1,9 @@
-from pydantic import EmailStr, BaseModel
+from pydantic import BaseModel, EmailStr
 
-# Données envoyées par l'utilisateur pour se connecter
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class AuthRequest(BaseModel):
     email: EmailStr
     password: str
