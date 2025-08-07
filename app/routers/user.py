@@ -4,6 +4,7 @@ from db import get_session
 from models import User
 from schemas.user import UserRead, UserCreate, UserUpdate 
 from security import hash_password
+from routers.authentification import require_role
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -28,13 +29,13 @@ def lire_un_utilisateur(user_id: int, session: Session = Depends(get_session)):
 
 #Créer un nouvel utilisateur
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def creer_un_utilisateur(user: UserCreate, session: Session = Depends(get_session)):
+def creer_un_utilisateur(user: UserCreate, session: Session = Depends(require_role(["admin"]))):
     nouvel_utilisateur = User(
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
         role=user.role,
-        password_hashed = hash_password(user.password), #À sécuriser plus tard 
+        password_hashed = hash_password(user.password),
         address_user=user.address_user,
         phone=user.phone,
     )
