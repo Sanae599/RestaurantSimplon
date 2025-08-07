@@ -16,7 +16,7 @@ class User(SQLModel, table=True):
     last_name: str
     email: str = Field(index=True, unique=True)
     role: str  # admin, employee, client
-    password_hashed: str
+    password_hashed : str
     address_user: Optional[str] = None
     phone: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)

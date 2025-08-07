@@ -4,6 +4,7 @@ from sqlmodel import SQLModel
 from pydantic import EmailStr, ConfigDict, field_validator, StringConstraints
 from enumerations import Role
 from datetime import datetime
+from models import User
 
 #Création d'un utilisateur (POST)
 class UserCreate(SQLModel):
@@ -11,7 +12,7 @@ class UserCreate(SQLModel):
     last_name: Annotated[str, StringConstraints(max_length=50)]
     email: EmailStr
     role: Role
-    password_hashed: str # = None ?
+    password : str = User.password_hashed # = None ? 
     address_user: str
     phone: str
     created_at: Optional[datetime] = None
@@ -41,11 +42,11 @@ class UserRead(SQLModel):
     role: Role
     address_user: str
     phone: str
-    created_at: datetime = datetime.now()
+    created_at: datetime
 
 class UserUpdate(SQLModel):
-    firstname:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
-    lastname:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
+    first_name:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
+    last_name:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
     email: Optional[EmailStr] = None
     role: Optional[Role] = None
     address_user: Optional[str] = None
@@ -63,3 +64,5 @@ class UserUpdate(SQLModel):
         if not re.match(r'^0[0-9](\d{2}){4}$', value):
             raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
         return value
+    
+    
