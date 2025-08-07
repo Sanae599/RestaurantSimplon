@@ -11,6 +11,7 @@ class ProductCreate(SQLModel):
     category: Category 
     description: Optional[Annotated[str, StringConstraints(max_length=200)]]
     stock: int
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(
         # vire espace avant après
@@ -55,3 +56,17 @@ class ProductUpdate(SQLModel):
         validate_assignment=True,
         use_enum_values=True
     )
+
+    @field_validator('unit_price')
+    # cls pour accèder à l'attribut de la class
+    def validate_unit_price(cls, value: float):
+        if value is not None and value <= 0:
+            raise ValueError("Le prix doit être sup à 0€")
+        return value
+    
+    @field_validator('stock')
+    def validate_stock(cls, value: int):
+        if value is not None and value < 0:
+            raise ValueError("Le stock ne peut pas être inf à 0.")
+        return value
+    

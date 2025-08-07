@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from db import get_session
 from models import User
 from schemas.user import UserRead, UserCreate, UserUpdate 
+from security import hash_password
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -33,7 +34,7 @@ def creer_un_utilisateur(user: UserCreate, session: Session = Depends(get_sessio
         last_name=user.last_name,
         email=user.email,
         role=user.role,
-        password_hashed=user.password,  #À sécuriser plus tard 
+        password_hashed = hash_password(user.password), #À sécuriser plus tard 
         address_user=user.address_user,
         phone=user.phone,
     )
@@ -44,14 +45,20 @@ def creer_un_utilisateur(user: UserCreate, session: Session = Depends(get_sessio
 
 #Modifier partiellement un utilisateur (PATCH)
 @router.patch("/{user_id}", response_model=UserRead)
-def patch_utilisateur(user_id: int, user: UserUpdate, session: Session = Depends(get_session)):
+def patch_utilisateur(
+    user_id: int,
+    user: UserUpdate,
+    session: Session = Depends(get_session)):
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    #On modifie uniquement les champs reçus (qui ne sont pas None)
     update_data = user.model_dump(exclude_unset=True)
+    if "password" in update_data:
+        plain = update_data.pop("password")
+        utilisateur.password_hashed = hash_password(plain)
     for key, value in update_data.items():
         setattr(utilisateur, key, value)
+    session.add(utilisateur)
     session.commit()
     session.refresh(utilisateur)
     return utilisateur

@@ -9,6 +9,7 @@ class OrderCreate(SQLModel):
     user_id: int
     total_amount: float
     status: Status
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(
         # vire espace avant après
