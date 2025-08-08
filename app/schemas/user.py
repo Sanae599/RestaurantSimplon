@@ -11,7 +11,6 @@ class UserCreate(SQLModel):
     first_name: Annotated[str, StringConstraints(max_length=50)]
     last_name: Annotated[str, StringConstraints(max_length=50)]
     email: EmailStr
-    role: Role
     password : str # = None ? 
     address_user: str
     phone: str
