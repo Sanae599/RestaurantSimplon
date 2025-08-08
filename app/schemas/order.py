@@ -61,3 +61,8 @@ class OrderCreateWithItems(SQLModel):
         if not v:
             raise ValueError("La commande doit contenir au moins un article.")
         return v
+
+class OrderPatchWithItems(SQLModel):
+    user_id: Optional[int] = None
+    status: Optional[Status] = None
+    items: Optional[List[OrderItemInOrderRead]] = None
