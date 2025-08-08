@@ -9,7 +9,7 @@ from db import get_session
 from fastapi import Depends, HTTPException, status
 from models import User
 from sqlmodel import Session, select
-
+from config import *
 
 
 # Hasher le mot de passe 
@@ -23,11 +23,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
-
-# Variables de configuration
-SECRET_KEY = "ta_clef_secrète_super_sécurisée"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
