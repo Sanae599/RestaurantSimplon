@@ -1,28 +1,34 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import select
 from db import get_session
 from models import Product
 from schemas.product import ProductRead, ProductCreate, ProductUpdate 
+from security import get_current_user
+from enumerations import Role
 
 router = APIRouter(prefix="/product", tags=["product"])
 
 # get all products
 @router.get("/", response_model=list[ProductRead])
-def lister_les_produits(session: Session = Depends(get_session)):
+def lister_les_produits(session = Depends(get_session), current_user = Depends(get_current_user)):
     produits = session.exec(select(Product)).all()
+    if current_user.role not in (Role.EMPLOYEE, Role.ADMIN):
+        raise HTTPException(status_code=403, detail="Réservée au personnel")
     return produits
 
 #get one product by id
 @router.get("/{product_id}", response_model=ProductRead)
-def lire_un_produit_id(product_id: int, session: Session = Depends(get_session)):
+def lire_un_produit_id(product_id, session = Depends(get_session),current_user = Depends(get_current_user)):
     produit = session.get(Product, product_id)
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
+    if current_user.role not in (Role.EMPLOYEE, Role.ADMIN):
+        raise HTTPException(status_code=403, detail="Réservée au personnel")
     return produit
 
 #add new product
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
-def creer_un_produit(product: ProductCreate, session: Session = Depends(get_session)):
+def creer_un_produit(product, session = Depends(get_session), current_user = Depends(get_current_user)):
     nouveau_produit = Product(
         name=product.name,
         unit_price=product.unit_price,
@@ -30,6 +36,8 @@ def creer_un_produit(product: ProductCreate, session: Session = Depends(get_sess
         description=product.description,
         stock=product.stock
     )
+    if current_user.role not in (Role.EMPLOYEE, Role.ADMIN):
+        raise HTTPException(status_code=403, detail="Réservée au personnel.")
     session.add(nouveau_produit)
     session.commit()
     session.refresh(nouveau_produit)
@@ -37,7 +45,9 @@ def creer_un_produit(product: ProductCreate, session: Session = Depends(get_sess
 
 # Patch product
 @router.patch("/{product_id}", response_model=ProductRead)
-def patch_product(product_id: int, product: ProductUpdate, session: Session = Depends(get_session)):
+def patch_product(product_id, product, session = Depends(get_session), current_user = Depends(get_current_user)):
+    if current_user.role not in (Role.EMPLOYEE, Role.ADMIN):
+        raise HTTPException(status_code=403, detail="Réservée au personnel.")
     produit = session.get(Product, product_id)
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
@@ -51,7 +61,9 @@ def patch_product(product_id: int, product: ProductUpdate, session: Session = De
 
 #Supprimer un produit
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def supprimer_un_produit(product_id: int, session: Session = Depends(get_session)):
+def supprimer_un_produit(product_id, session = Depends(get_session), current_user = Depends(get_current_user)):
+    if current_user.role not in (Role.ADMIN):
+        raise HTTPException(status_code=403, detail="Réservée aux admins.")
     produit = session.get(Product, product_id)
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
