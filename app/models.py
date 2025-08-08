@@ -3,12 +3,6 @@ from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy import Column, ForeignKey
 
-
-# https://docs-sqlalchemy.readthedocs.io/ko/latest/orm/cascades.html
-# https://stackoverflow.com/questions/5033547/sqlalchemy-cascade-delete
-# https://github.com/fastapi/sqlmodel/issues/213?utm_source=chatgpt.com%3Futm_source%3Dchatgpt.com
-
-
 # USER
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -26,7 +20,7 @@ class User(SQLModel, table=True):
 # PRODUCT
 class Product(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(unique=True)
     unit_price: float
     category: str
     description: Optional[str] = None
