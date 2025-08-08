@@ -5,6 +5,7 @@ from models import User
 from schemas.user import UserRead, UserCreate, UserUpdate 
 from security import hash_password
 from security import get_current_user
+from enumerations import Role
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -15,13 +16,25 @@ router = APIRouter(prefix="/user", tags=["user"])
 
 #Lister tous les utilisateurs
 @router.get("/", response_model=list[UserRead])
-def lister_les_utilisateurs(session: Session = Depends(get_session)):
+def lister_les_utilisateurs(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)):
+    if current_user.role != Role.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs peuvent lister les utilisateurs."
+        )
     utilisateurs = session.exec(select(User)).all()
     return utilisateurs
 
 #Lire un utilisateur par son id
 @router.get("/{user_id}", response_model=UserRead)
-def lire_un_utilisateur(user_id: int, session: Session = Depends(get_session)):
+def lire_un_utilisateur(user_id: int, session: Session = Depends(get_session),current_user: User = Depends(get_current_user)):
+    if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs et les employées peuvent lister les utilisateurs."
+        )
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
@@ -56,17 +69,34 @@ def creer_un_utilisateur(
 
 #Modifier partiellement un utilisateur (PATCH)
 @router.patch("/{user_id}", response_model=UserRead)
-def patch_utilisateur(
-    user_id: int,
+def patch_utilisateur(user_id: int,
     user: UserUpdate,
-    session: Session = Depends(get_session)):
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+
+    if current_user.role != Role.ADMIN and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous ne pouvez modifier que votre propre profil."
+        )
     utilisateur = session.get(User, user_id)
+
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
     update_data = user.model_dump(exclude_unset=True)
+    
+    if "role" in update_data and current_user.role != Role.ADMIN:
+        raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Seuls les administrateurs peuvent modifier le rôle d’un utilisateur."
+    )
+        
     if "password" in update_data:
         plain = update_data.pop("password")
         utilisateur.password_hashed = hash_password(plain)
+        
     for key, value in update_data.items():
         setattr(utilisateur, key, value)
     session.add(utilisateur)
@@ -76,7 +106,13 @@ def patch_utilisateur(
 
 #Supprimer un utilisateur
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def supprimer_un_utilisateur(user_id: int, session: Session = Depends(get_session)):
+def supprimer_un_utilisateur(user_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)  ):
+    
+    if current_user.id != user_id and current_user.role != Role.ADMIN :
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous pouvez supprimer que votre profil."
+        )
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
