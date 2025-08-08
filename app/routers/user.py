@@ -9,11 +9,6 @@ from enumerations import Role
 
 router = APIRouter(prefix="/user", tags=["user"])
 
-#À activer plus tard pour récupérer le user courant (nécessite authentification JWT)
-# @router.get("/me", response_model=UserRead)
-# def get_my_profile(current_user: User = Depends(get_current_user)):
-#     return current_user
-
 #Lister tous les utilisateurs
 @router.get("/", response_model=list[UserRead])
 def lister_les_utilisateurs(
