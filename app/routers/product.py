@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select
+from sqlmodel import Session, select
 from db import get_session
-from models import Product
+from models import Product, User
 from schemas.product import ProductRead, ProductCreate, ProductUpdate 
 from security import get_current_user
 from enumerations import Role
@@ -18,7 +18,7 @@ def lister_les_produits(session = Depends(get_session), current_user = Depends(g
 
 #get one product by id
 @router.get("/{product_id}", response_model=ProductRead)
-def lire_un_produit_id(product_id, session = Depends(get_session),current_user = Depends(get_current_user)):
+def lire_un_produit_id(product_id: int, session: Session = Depends(get_session),current_user = Depends(get_current_user)):
     produit = session.get(Product, product_id)
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
@@ -28,7 +28,7 @@ def lire_un_produit_id(product_id, session = Depends(get_session),current_user =
 
 #add new product
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
-def creer_un_produit(product, session = Depends(get_session), current_user = Depends(get_current_user)):
+def creer_un_produit(product: ProductCreate, session = Depends(get_session), current_user = Depends(get_current_user)):
     nouveau_produit = Product(
         name=product.name,
         unit_price=product.unit_price,
@@ -45,7 +45,7 @@ def creer_un_produit(product, session = Depends(get_session), current_user = Dep
 
 # Patch product
 @router.patch("/{product_id}", response_model=ProductRead)
-def patch_product(product_id, product, session = Depends(get_session), current_user = Depends(get_current_user)):
+def patch_product(product_id: int, product: ProductUpdate, session = Depends(get_session), current_user = Depends(get_current_user)):
     if current_user.role not in (Role.EMPLOYEE, Role.ADMIN):
         raise HTTPException(status_code=403, detail="Réservée au personnel.")
     produit = session.get(Product, product_id)
@@ -61,7 +61,7 @@ def patch_product(product_id, product, session = Depends(get_session), current_u
 
 #Supprimer un produit
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def supprimer_un_produit(product_id, session = Depends(get_session), current_user = Depends(get_current_user)):
+def supprimer_un_produit(product_id: int, session: Session = Depends(get_session), current_user = Depends(get_current_user)):
     if current_user.role not in (Role.ADMIN):
         raise HTTPException(status_code=403, detail="Réservée aux admins.")
     produit = session.get(Product, product_id)
