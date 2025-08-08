@@ -8,6 +8,7 @@ from db import get_session
 from fastapi import Depends, HTTPException, status
 from models import User
 from sqlmodel import Session, select
+from config import *
 
 
 # Hasher le mot de passe 
