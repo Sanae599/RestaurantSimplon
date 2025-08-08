@@ -1,14 +1,11 @@
 from sqlmodel import Session, select
 from models import User 
-from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
+from fastapi import Depends, HTTPException, status, APIRouter, Body
 from fastapi.security import OAuth2PasswordRequestForm
-from security import create_access_token, verify_password,get_current_user
-from fastapi import Depends
-from sqlmodel import Session
+from security import hash_password, create_access_token, verify_password, create_refresh_token, SECRET_KEY, ALGORITHM, get_current_user
 from db import get_session  
-from fastapi import Body, status
 from schemas.user import UserCreate
-from security import hash_password
+from jose import JWTError, jwt
 
 router = APIRouter(prefix="/login", tags=["login"])
 
@@ -19,18 +16,44 @@ def get_user_by_email(email: str, session: Session) -> User | None:
 
 @router.post("/token")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),session: Session = Depends(get_session)):
+
     user = get_user_by_email(form_data.username, session)
     if not user:
         raise HTTPException(status_code=400, detail="Utilisateur non trouvé")
     if not verify_password(form_data.password, user.password_hashed):
         raise HTTPException(status_code=400, detail="Mot de passe incorrect")
+    
     access_token = create_access_token(data={"sub": user.email, "role": user.role})
-    return {"access_token": access_token}
+    refresh_token = create_refresh_token(data={"sub": user.email, "role": user.role})
+    return {"access_token": access_token, "refresh_token": refresh_token}
+
+@router.post("/refresh-token")
+def refresh_access_token(refresh_token: str = Body(..., embed=True), session: Session = Depends(get_session)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="refresh token expiré ou invalide",
+        headers={"WWW-Authenticate": "Bearer"},)
+
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "refresh":
+            raise credentials_exception 
+        email: str | None = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = session.exec(select(User).where(User.email == email)).first()
+    if not user:
+        raise credentials_exception
+
+    new_access_token = create_access_token(data={"sub": user.email, "role": user.role})
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
-
 
 @router.post("/register")
 def register(user_data: UserCreate, session: Session = Depends(get_session)):
