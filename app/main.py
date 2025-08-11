@@ -5,9 +5,6 @@ from routers import user, product, order, delivery, login
 from contextlib import asynccontextmanager
 import os
 
-app = FastAPI()
-DB_PATH = "./database.db"
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Supprimer le fichier si déjà là
@@ -21,6 +18,9 @@ async def lifespan(app: FastAPI):
         add_fake_data(session)
 
     yield
+
+app = FastAPI(lifespan=lifespan)
+DB_PATH = "./database.db"
     
 # Endpoint de test pour vérifier que l'API tourne bien
 @app.get("/")
