@@ -32,7 +32,8 @@ class Product(SQLModel, table=True):
     description: Optional[str] = None
     stock: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    
+    sku: Optional[str] = Field(default=None, index=True)  #  ajout de SKU 
+
     order_items: List["OrderItem"] = Relationship(back_populates="product", cascade_delete=True)
 
 # ORDER
