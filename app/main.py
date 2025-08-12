@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db import get_session
-from app.fake_data import add_fake_data, reset_db
+from app.fake_data import add_fake_data, reset_db  
 from app.routers import user, product, order, delivery, login
 from contextlib import asynccontextmanager
 
