@@ -3,11 +3,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
-from db import get_session
+from app.db import get_session
 from fastapi import Depends, HTTPException, status
-from models import User
+from app.models import User
 from sqlmodel import Session, select
-from config import *
+from app.config import *
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()

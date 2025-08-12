@@ -2,7 +2,7 @@ from typing import Optional, Annotated
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator, StringConstraints
 from datetime import datetime
-from enumerations import StatusDelivery
+from app.enumerations import StatusDelivery
 
 #Création d'une livraison (POST)
 class DeliveryCreate(SQLModel):

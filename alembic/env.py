@@ -1,14 +1,10 @@
 from logging.config import fileConfig
+import os 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from alembic import context
-
-# adaptation pour sqlmodel: 
-import sys
-import os
-sys.path.append(os.getcwd())
-from app.models import User
+from app.models import User, Product, Order, Delivery, OrderItem  # forcer le chargement
 from sqlmodel import SQLModel
+from alembic import context
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -30,6 +26,12 @@ target_metadata = SQLModel.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+DATABASE_URL = (
+    f"postgresql+psycopg2://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
+    f"@{os.getenv('POSTGRES_HOST')}/{os.getenv('POSTGRES_DB')}"
+)
+
+config.set_main_option('sqlalchemy.url', DATABASE_URL)
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
