@@ -1,9 +1,9 @@
 from faker import Faker
-from models import User, Product, Order, OrderItem, Delivery
+from app.models import User, Product, Order, OrderItem, Delivery
 import random
 from datetime import datetime, timedelta, timezone  
-from enumerations import *
-from security import hash_password
+from app.enumerations import *
+from app.security import hash_password
 
 # créee une instance de Faker
 fake = Faker()

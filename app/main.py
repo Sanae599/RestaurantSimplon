@@ -1,36 +1,18 @@
 from fastapi import FastAPI
-from db import engine, init_db, get_session
-from fake_data import *
-from routers import user, product, order, delivery, login
+from app.db import get_session
+from app.fake_data import add_fake_data, reset_db  
+from app.routers import user, product, order, delivery, login
 from contextlib import asynccontextmanager
-import os
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Supprimer le fichier si déjà là
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+app = FastAPI()
 
-    # Réinitialiser et remplir la BDD
-    init_db()
-    with get_session() as session:
-        reset_db(session)
-        add_fake_data(session)
-
-    yield
-
-app = FastAPI(lifespan=lifespan)
-DB_PATH = "./database.db"
-    
-# Endpoint de test pour vérifier que l'API tourne bien
 @app.get("/")
 def read_root():
     return {"message": "API RestauSimplon fonctionne bien"}
 
-#Pour nos futurs endpoints (routers, routes d'auth, CRUD, et
+# monte tes routers
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
 app.include_router(delivery.router)
 app.include_router(login.router)
-
