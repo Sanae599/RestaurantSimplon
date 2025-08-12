@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlmodel import SQLModel
 from pydantic import ConfigDict, field_validator
-from enumerations import Status
+from app.enumerations import Status
 from datetime import datetime
 
 class OrderRead(SQLModel):

@@ -2,9 +2,9 @@ import re
 from typing import Annotated, Optional
 from sqlmodel import SQLModel
 from pydantic import EmailStr, ConfigDict, field_validator, StringConstraints
-from enumerations import Role
+from app.enumerations import Role
 from datetime import datetime
-from models import User
+from app.models import User
 
 #Création d'un utilisateur (POST)
 class UserCreate(SQLModel):

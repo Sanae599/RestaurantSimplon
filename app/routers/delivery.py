@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from db import get_session
-from models import Delivery
-from schemas.delivery import DeliveryRead, DeliveryCreate, DeliveryUpdate 
+from app.db import get_session
+from app.models import Delivery
+from app.schemas.delivery import DeliveryRead, DeliveryCreate, DeliveryUpdate 
 
 router = APIRouter(prefix="/delivery", tags=["delivery"])
 
