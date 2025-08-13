@@ -10,9 +10,9 @@ COPY alembic.ini /alembic.ini
 COPY alembic /alembic
 COPY . /app
 
-RUN chmod +x /app/docker/entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
 # Démarrage
-ENTRYPOINT ["/app/docker/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

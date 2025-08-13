@@ -99,11 +99,12 @@ def create_fake_order_items(orders, products):
     return order_items
 
 def reset_db(session):
-    session.query(OrderItem).delete()
-    session.query(Order).delete()
-    session.query(Delivery).delete()
-    session.query(Product).delete()
-    session.query(User).delete()
+
+    session.query(OrderItem).delete()   # dépend de Order et Product
+    session.query(Delivery).delete()    # dépend de Order
+    session.query(Order).delete()       # maintenant on peut supprimer Order
+    session.query(Product).delete()     # dépend d'aucune table
+    session.query(User).delete()        # dépend d'aucune table
     session.commit()
 
 def add_fake_data(session):
