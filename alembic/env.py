@@ -1,26 +1,26 @@
-import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from sqlmodel import SQLModel
-from app import models
 from dotenv import load_dotenv
 
-# Charger .env
-load_dotenv()
+import os, sys
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
-# Récupérer DATABASE_URL depuis l'environnement
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL non défini dans .env")
 
-# Appliquer à Alembic
+load_dotenv()  # optionnel si tu utilises env_file
+
 config = context.config
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
-
-# Config logs
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Metadatas pour autogenerate
+db_url = os.getenv("DATABASE_URL") or config.get_main_option("sqlalchemy.url", "")
+if not db_url:
+    raise RuntimeError("Aucune DATABASE_URL trouvée (ni env, ni alembic.ini)")
+
+config.set_main_option("sqlalchemy.url", db_url)
+
+from app import models  # après avoir fixé sys.path
 target_metadata = SQLModel.metadata
