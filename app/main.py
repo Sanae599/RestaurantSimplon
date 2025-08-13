@@ -10,7 +10,7 @@ app = FastAPI()
 def read_root():
     return {"message": "API RestauSimplon fonctionne bien"}
 
-# monte tes routers
+
 app.include_router(user.router)
 app.include_router(product.router)
 app.include_router(order.router)
