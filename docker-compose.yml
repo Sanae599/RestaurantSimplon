@@ -39,4 +39,4 @@ services:
       - .:/app
 
 volumes:
-  pgdata:
+  pg_data:
