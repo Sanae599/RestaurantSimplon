@@ -35,8 +35,21 @@ def create_fake_users(n):
             phone=generate_fr_phone(),
             created_at = fake.date_time()
         )
+        user_data_admin = User(
+            first_name="admin",  
+            last_name="admin", 
+            email=fake.unique.email(),  
+            role=Role.ADMIN,  
+            password_hashed = hash_password("admin"),
+            address_user=fake.unique.address(), 
+            phone=generate_fr_phone(),
+            created_at = fake.date_time()
+        )
         users.append(user_data)
+        users.append(user_data_admin)
+
     return users
+
 
 def create_fake_products(n):
     products = []
