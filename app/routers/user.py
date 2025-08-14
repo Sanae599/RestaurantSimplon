@@ -6,6 +6,8 @@ from app.schemas.user import UserRead, UserCreate, UserUpdate
 from app.security import hash_password
 from app.security import get_current_user
 from app.enumerations import Role
+from fastapi import HTTPException
+from sqlalchemy import select
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -42,12 +44,24 @@ def creer_un_utilisateur(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)  
 ):
+    # Vérif rôle
     if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Seuls les administrateurs peuvent créer un utilisateur."
         )
 
+    # Vérif email déjà utilisé
+    existing_user = session.exec(
+        select(User).where(User.email == user.email)
+    ).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cet email est déjà enregistré."
+        )
+
+    # Création de l'utilisateur
     nouvel_utilisateur = User(
         first_name=user.first_name,
         last_name=user.last_name,
