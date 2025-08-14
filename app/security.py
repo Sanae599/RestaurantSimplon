@@ -7,7 +7,15 @@ from app.db import get_session
 from fastapi import Depends, HTTPException, status
 from app.models import User
 from sqlmodel import Session, select
-from app.config import *
+from dotenv import load_dotenv
+import os
+load_dotenv()  # lit le fichier .env à la racine du projet
+
+#Récupération des variables d'environnement
+SECRET_KEY = os.environ["SECRET_KEY"]  # lève une erreur si manquante
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()

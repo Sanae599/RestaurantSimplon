@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timedelta, timezone  
 from app.enumerations import *
 from app.security import hash_password
+from sqlalchemy import text
 
 # créee une instance de Faker
 fake = Faker()
@@ -99,12 +100,19 @@ def create_fake_order_items(orders, products):
     return order_items
 
 def reset_db(session):
-
     session.query(OrderItem).delete()   # dépend de Order et Product
     session.query(Delivery).delete()    # dépend de Order
     session.query(Order).delete()       # maintenant on peut supprimer Order
     session.query(Product).delete()     # dépend d'aucune table
     session.query(User).delete()        # dépend d'aucune table
+    session.commit()
+    # Liste des tables pour lesquelles on veut reset la séquence
+    tables = ["user", "product", "order", "delivery"]
+
+    for table in tables:
+        seq_name = f"{table}_id_seq"
+        session.execute(text(f'ALTER SEQUENCE {seq_name} RESTART WITH 1'))
+
     session.commit()
 
 def add_fake_data(session):
