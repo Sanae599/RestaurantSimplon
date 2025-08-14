@@ -58,6 +58,16 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 @router.post("/register")
 def register(user_data: UserCreate, session: Session = Depends(get_session)):
 
+    # Vérif email déjà utilisé
+    existing_user = session.exec(
+        select(User).where(User.email == user_data.email)
+    ).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cet email est déjà enregistré"
+        )
+
     user = User(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
