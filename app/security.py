@@ -1,13 +1,13 @@
 import bcrypt
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
 from app.db import get_session
+from sqlmodel import Session, select
 from fastapi import Depends, HTTPException, status
 from app.models import User
-from sqlmodel import Session, select
 from dotenv import load_dotenv
+from app.enumerations import Role
 import os
 load_dotenv()  # lit le fichier .env à la racine du projet
 
@@ -63,4 +63,46 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
         raise credentials_exception
     return user
 
-
+def check_admin(current_user):
+    if current_user.role != Role.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous n'etes pas admin"
+        )
+    
+ 
+def check_admin_employee(current_user):
+    if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous n'etes pas admin ou employée"
+        )
+        
+def check_email_exists(existing_user) :
+    # Vérif email déjà utilisé
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cet email est déjà enregistré."
+        )
+def check_admin_self(current_user, user_id):
+    if current_user.role != Role.ADMIN and current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Vous ne pouvez modifier que votre propre profil."
+        )
+def check_user_exists(utilisateur) :
+    if not utilisateur:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+def check_name_product_exists(existing_product):
+    if existing_product:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Produit déja existant"
+        )
+def check_product_exists(product):
+    if not product:
+        raise HTTPException(
+            status_code=404, detail="Produit non trouvé"
+        )

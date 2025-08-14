@@ -3,9 +3,7 @@ from sqlmodel import Session, select
 from app.db import get_session
 from app.models import User
 from app.schemas.user import UserRead, UserCreate, UserUpdate 
-from app.security import hash_password
-from app.security import get_current_user
-from app.enumerations import Role
+from app.security import *
 from fastapi import HTTPException
 from sqlalchemy import select
 
@@ -16,22 +14,14 @@ router = APIRouter(prefix="/user", tags=["user"])
 def lister_les_utilisateurs(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)):
-    if current_user.role != Role.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seuls les administrateurs peuvent lister les utilisateurs."
-        )
+    check_admin(current_user)
     utilisateurs = session.exec(select(User)).all()
     return utilisateurs
 
 #Lire un utilisateur par son id
 @router.get("/{user_id}", response_model=UserRead)
 def lire_un_utilisateur(user_id: int, session: Session = Depends(get_session),current_user: User = Depends(get_current_user)):
-    if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seuls les administrateurs et les employées peuvent lister les utilisateurs."
-        )
+    check_admin_employee(current_user)
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
@@ -44,22 +34,12 @@ def creer_un_utilisateur(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)  
 ):
-    # Vérif rôle
-    if current_user.role != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seuls les administrateurs peuvent créer un utilisateur."
-        )
-
-    # Vérif email déjà utilisé
+    check_admin(current_user)
     existing_user = session.exec(
         select(User).where(User.email == user.email)
     ).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cet email est déjà enregistré."
-        )
+    check_email_exists(existing_user)
+    
 
     # Création de l'utilisateur
     nouvel_utilisateur = User(
@@ -84,23 +64,15 @@ def patch_utilisateur(user_id: int,
     current_user: User = Depends(get_current_user)
 ):
 
-    if current_user.role != Role.ADMIN and current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Vous ne pouvez modifier que votre propre profil."
-        )
+    check_admin_self(current_user, user_id)
     utilisateur = session.get(User, user_id)
 
-    if not utilisateur:
-        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
-    
+    check_user_exists(utilisateur)
     update_data = user.model_dump(exclude_unset=True)
     
-    if "role" in update_data and current_user.role != Role.ADMIN:
-        raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Seuls les administrateurs peuvent modifier le rôle d’un utilisateur."
-    )
+
+    if "role" in update_data :
+        check_admin(current_user)
         
     if "password" in update_data:
         plain = update_data.pop("password")
@@ -116,12 +88,7 @@ def patch_utilisateur(user_id: int,
 #Supprimer un utilisateur
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def supprimer_un_utilisateur(user_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)  ):
-    
-    if current_user.id != user_id and current_user.role != Role.ADMIN :
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Vous pouvez supprimer que votre profil."
-        )
+    check_admin_self(current_user, user_id)
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
