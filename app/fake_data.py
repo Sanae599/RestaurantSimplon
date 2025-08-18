@@ -22,6 +22,18 @@ def remove_dot(text):
 def create_fake_users(n):
     # recup heure actuelle
     users = []
+    user_data_admin = User(
+            first_name="admin",  
+            last_name="admin", 
+            email=fake.unique.email(),  
+            role=Role.ADMIN,  
+            password_hashed = hash_password("admin"),
+            address_user=fake.unique.address(), 
+            phone=generate_fr_phone(),
+            created_at = fake.date_time()
+        )
+    users.append(user_data_admin)
+
     for _ in range(n):
         # entre 30 et 10 jours dans le passé
         # user_date: instance du schéma
@@ -36,7 +48,9 @@ def create_fake_users(n):
             created_at = fake.date_time()
         )
         users.append(user_data)
+
     return users
+
 
 def create_fake_products(n):
     products = []
