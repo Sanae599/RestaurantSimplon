@@ -119,21 +119,3 @@ jobs:
             .pytest_cache/
             openapi.json
 
-  deploy:
-    needs: [ docker ]             # ne déploie que si tests + build OK
-    if: github.ref == 'refs/heads/main'  # déploie seulement depuis main (à adapter)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Deploy over SSH with docker compose
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            set -e
-            cd /srv/RestaurantSimplon         # dossier où se trouve docker-compose.yml
-            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-            docker compose pull api
-            docker compose up -d api
