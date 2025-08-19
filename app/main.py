@@ -15,8 +15,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL, echo=True)
 
 with Session(engine) as session:
-    reset_db(session)       # vide les tables
-    add_fake_data(session)  # insère les données
+    if __name__ == "__main__":
+        reset_db(session)       # vide les tables
+        add_fake_data(session)  # insère les données
 
 @app.get("/")
 def read_root():
