@@ -60,7 +60,7 @@ jobs:
             --cov-fail-under=60 
 
       - name: Export OpenAPI (Swagger)
-        run: python scripts/export_openapi.py
+        run: python export_openapi.py
         env:
           OPENAPI_OUT: openapi.json
 
