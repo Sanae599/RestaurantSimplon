@@ -10,8 +10,48 @@ permissions:
   contents: read
   packages: write
 
+#JOB 1 : QUALITÉ (black / isort / flake8 / mypy)
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dev tools
+        run: |
+          python -m pip install --upgrade pip
+          # si tu as requirements-dev.txt, décommente la ligne suivante et ajoute-y black/isort/flake8/mypy
+          # pip install -r requirements-dev.txt
+          pip install black isort flake8 mypy
+
+      - name: Show versions
+        run: |
+          black --version
+          isort --version
+          flake8 --version
+          mypy --version
+
+      - name: Black (check format)
+        run: black --check .
+
+      - name: Isort (check imports)
+        run: isort --check-only .
+
+      - name: Flake8 (lint)
+        run: flake8 .
+
+      - name: Mypy (typing)
+        run: mypy app
+
+  #JOB 2 : TESTS (ne tourne que si lint est OK)
   test:
+    needs: [ lint ]
     runs-on: ubuntu-latest
 
     services:
@@ -46,7 +86,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install runtime deps
         run: |
           set -xe
           python -m pip install --upgrade pip
@@ -76,16 +116,13 @@ jobs:
             echo "No alembic.ini found, skipping migrations."
           fi
 
-      # 👉 Étape clé: détection des erreurs de collecte/import
       - name: Pytest collect-only (debug)
         run: |
           set -xe
           pytest --version
-          # Lister les fichiers de tests détectés
           echo "=== Collecting tests (no execution) ==="
           pytest --collect-only -q || exit $?
 
-      # 👉 Si la collecte passe, on exécute vraiment les tests + coverage
       - name: Run tests with coverage (≥60%)
         run: |
           set -xe
@@ -118,4 +155,3 @@ jobs:
             htmlcov/
             .pytest_cache/
             openapi.json
-

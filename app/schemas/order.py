@@ -1,8 +1,11 @@
-from typing import Optional, List
-from sqlmodel import SQLModel
-from pydantic import ConfigDict, field_validator
-from app.enumerations import Status
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import ConfigDict, field_validator
+from sqlmodel import SQLModel
+
+from app.enumerations import Status
+
 
 class OrderRead(SQLModel):
     id: int

@@ -1,9 +1,8 @@
 import pytest
 from pydantic import ValidationError
-from app.schemas.order import (
-    OrderItemCreateInOrder,
-    OrderCreateWithItems,
-)
+
+from app.schemas.order import OrderCreateWithItems, OrderItemCreateInOrder
+
 
 # OrderItemCreateInOrder
 def test_order_item_quantity_valid():

@@ -1,8 +1,10 @@
-import pytest
-from pydantic import ValidationError
 from datetime import datetime, timezone
 
+import pytest
+from pydantic import ValidationError
+
 from app.models import Order
+
 
 def test_order_ok_minimal_types():
     """
