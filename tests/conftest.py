@@ -1,14 +1,16 @@
+import os
 import pytest
-from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
-
+from dotenv import load_dotenv
 load_dotenv()
 from app.db import get_session
 from app.enumerations import Category, Role
 from app.main import app
 from app.models import Product, User
 from app.security import hash_password
+
+
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(

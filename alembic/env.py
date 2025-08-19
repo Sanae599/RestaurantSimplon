@@ -1,7 +1,7 @@
 import os
 import sys
 from logging.config import fileConfig
-
+from app import models  # noqa: F401  # important pour que Alembic voie les tables
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
