@@ -19,9 +19,12 @@ class User(SQLModel, table=True):
     password_hashed: str
     address_user: Optional[str] = None
     phone: Optional[str] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
     orders: List["Order"] = Relationship(back_populates="user", cascade_delete=True)
+
 
 # PRODUCT
 class Product(SQLModel, table=True):
@@ -31,10 +34,15 @@ class Product(SQLModel, table=True):
     category: str
     description: Optional[str] = None
     stock: int
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    #sku: Optional[str] = Field(default=None, index=True)  #  ajout de SKU 
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+    # sku: Optional[str] = Field(default=None, index=True)  #  ajout de SKU
 
-    order_items: List["OrderItem"] = Relationship(back_populates="product", cascade_delete=True)
+    order_items: List["OrderItem"] = Relationship(
+        back_populates="product", cascade_delete=True
+    )
+
 
 # ORDER
 class Order(SQLModel, table=True):
@@ -42,23 +50,28 @@ class Order(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id")
     total_amount: float
     status: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
     user: Optional[User] = Relationship(back_populates="orders")
 
     delivery: Optional["Delivery"] = Relationship(
         back_populates="order",
         sa_relationship_kwargs={
-            # delete all children 
+            # delete all children
             "cascade": "all, delete-orphan",
             # 1 delivery appartien à 1 seul order
             "single_parent": True,
             # relation one one
-            "uselist": False
-        }
+            "uselist": False,
+        },
     )
 
-    order_items: List["OrderItem"] = Relationship(back_populates="order", cascade_delete=True)
+    order_items: List["OrderItem"] = Relationship(
+        back_populates="order", cascade_delete=True
+    )
+
 
 # DELIVERY
 class Delivery(SQLModel, table=True):
@@ -66,11 +79,14 @@ class Delivery(SQLModel, table=True):
     order_id: Optional[int] = Field(foreign_key="order.id", unique=True, nullable=False)
     address_delivery: str
     status: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
 
     order: Order = Relationship(back_populates="delivery")
 
-# ORDER ITEMS 
+
+# ORDER ITEMS
 class OrderItem(SQLModel, table=True):
     order_id: int = Field(
         sa_column=Column(ForeignKey("order.id", ondelete="CASCADE"), primary_key=True)
@@ -79,8 +95,9 @@ class OrderItem(SQLModel, table=True):
         sa_column=Column(ForeignKey("product.id", ondelete="CASCADE"), primary_key=True)
     )
     quantity: int
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
-    
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
     order: Optional[Order] = Relationship(back_populates="order_items")
     product: Optional[Product] = Relationship(back_populates="order_items")
-    

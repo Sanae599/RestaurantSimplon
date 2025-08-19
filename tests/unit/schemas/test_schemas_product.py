@@ -8,6 +8,7 @@ from app.schemas.product import ProductCreate, ProductUpdate
 
 # Tests ProductCreate
 
+
 def test_product_create_valid():
     """
     Cas valide : prix > 0 et stock >= 0
@@ -18,7 +19,7 @@ def test_product_create_valid():
         category=Category.PLAT_PRINCIPAL,
         description="Délicieuse pizza",
         stock=10,
-        created_at=datetime.now()
+        created_at=datetime.now(),
     )
     assert product.name == "Pizza"
     assert product.unit_price == 12.5
@@ -37,7 +38,7 @@ def test_product_create_invalid_unit_price(bad_price):
             unit_price=bad_price,
             category=Category.PLAT_PRINCIPAL,
             description="Burger ",
-            stock=5
+            stock=5,
         )
     assert "Le prix doit être sup à 0€" in str(exc.value)
 
@@ -53,22 +54,19 @@ def test_product_create_invalid_stock(bad_stock):
             unit_price=8.0,
             category=Category.ENTREE,
             description="Salade",
-            stock=bad_stock
+            stock=bad_stock,
         )
     assert "Le stock ne peut pas être inf à 0." in str(exc.value)
 
 
-
 # Tests ProductUpdate
+
 
 def test_product_update_valid_partial():
     """
     Cas valide : mise à jour partielle avec prix et stock corrects
     """
-    product_update = ProductUpdate(
-        unit_price=15.0,
-        stock=20
-    )
+    product_update = ProductUpdate(unit_price=15.0, stock=20)
     assert product_update.unit_price == 15.0
     assert product_update.stock == 20
 

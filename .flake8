@@ -1,0 +1,20 @@
+[flake8]
+# on élargit un peu la longueur des lignes
+max-line-length = 120
+
+# on ignore quelques règles verbeuses / incompatibles avec black
+extend-ignore = E203,E266,E501,W503
+
+# on tolère pas mal de choses dans les répertoires qui bougent beaucoup
+per-file-ignores =
+    # fichiers Alembic : imports bizarres, lignes longues, redéfinitions
+    alembic/*: E402,F401,F811,E501
+    # routes : on tolère des imports non utilisés (F401) pendant le dev
+    app/routers/*: F401
+    # tests : on tolère lignes longues, imports non utilisés, variables inutilisées, ordre d'import
+    tests/*: E501,F401,F841,E402
+    # temporaire : ce fichier a des appels à des fonctions pas encore écrites
+    app/routers/user.py: F821
+
+# on ne lint pas les dossiers “bruit”
+exclude = .venv,.git,__pycache__,.mypy_cache,.pytest_cache,htmlcov
