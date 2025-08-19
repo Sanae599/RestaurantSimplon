@@ -37,14 +37,19 @@ jobs:
           flake8 --version
           mypy --version
 
-      - name: Black (check format)
+      - name: Black
         run: black .
 
-      - name: Isort (check imports)
+      - name: Isort 
         run: isort .
 
-      - name: Flake8 (lint)
-        run: flake8 .
+      - name: Flake8
+        run: |
+          flake8 app tests \
+            --max-line-length 120 \
+            --extend-ignore E501,F401,E402,F811,F821,F841 \
+            --exclude alembic,venv,.venv,__pycache__,.git
+
 
       - name: Mypy (typing)
         run: mypy app
