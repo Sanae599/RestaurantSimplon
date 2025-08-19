@@ -77,7 +77,7 @@ jobs:
     needs: [ test ]
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}
+      IMAGE_NAME: ghcr.io/${{ toLower(github.repository) }}
     steps:
       - uses: actions/checkout@v4
       - name: Login to GHCR
