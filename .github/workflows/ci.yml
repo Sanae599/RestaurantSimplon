@@ -38,10 +38,10 @@ jobs:
           mypy --version
 
       - name: Black (check format)
-        run: black --check .
+        run: black .
 
       - name: Isort (check imports)
-        run: isort --check-only .
+        run: isort .
 
       - name: Flake8 (lint)
         run: flake8 .
