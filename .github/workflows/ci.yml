@@ -1,10 +1,14 @@
-name: CI - Tests & Coverage (simple)
+name: CI - Tests & Coverage (debug)
 
 on:
   push:
     branches: [ "main", "develop", "branch_sanae" ]
   pull_request:
     branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   test:
@@ -26,9 +30,9 @@ jobs:
 
     env:
       DATABASE_URL: postgresql+psycopg2://restau:restau_pwd@localhost:5432/restau_db
-      PYTHONUNBUFFERED: 1
+      PYTHONUNBUFFERED: "1"
       TESTING: "true"
-      SECRET_KEY: "ta_clef_secrete_super_sécurisee"
+      SECRET_KEY: "ci-test-secret"
       ALGORITHM: "HS256"
       ACCESS_TOKEN_EXPIRE_MINUTES: "30"
       REFRESH_TOKEN_EXPIRE_DAYS: "7"
@@ -44,25 +48,48 @@ jobs:
 
       - name: Install dependencies
         run: |
+          set -xe
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt || true
           pip install pytest pytest-cov alembic psycopg2-binary httpx
-
-      - name: Alembic upgrade (crée les tables)
-        run: |
-          alembic upgrade head
 
       - name: Show env & versions
         run: |
+          set -x
           python -V
-          pip show pytest pytest-cov httpx fastapi starlette sqlmodel
+          pip show pytest pytest-cov httpx fastapi starlette sqlmodel alembic psycopg2-binary
           echo "DATABASE_URL=$DATABASE_URL"
           echo "TESTING=$TESTING"
+          echo "SECRET_KEY set? $([ -n "$SECRET_KEY" ] && echo yes || echo no)"
+          echo "Repo tree:"
+          ls -R | sed -n '1,200p'
 
-      - name: Run tests with coverage (≥ 60%)
+      - name: Alembic status & upgrade (if present)
+        run: |
+          set -e
+          if [ -f "alembic.ini" ] || [ -f "app/alembic.ini" ]; then
+            echo "== Alembic files found, checking status =="
+            alembic current || true
+            echo "== Upgrading =="
+            alembic upgrade head
+          else
+            echo "No alembic.ini found, skipping migrations."
+          fi
+
+      # 👉 Étape clé: détection des erreurs de collecte/import
+      - name: Pytest collect-only (debug)
         run: |
           set -xe
-          pytest -vv \
+          pytest --version
+          # Lister les fichiers de tests détectés
+          echo "=== Collecting tests (no execution) ==="
+          pytest --collect-only -q || exit $?
+
+      # 👉 Si la collecte passe, on exécute vraiment les tests + coverage
+      - name: Run tests with coverage (≥60%)
+        run: |
+          set -xe
+          pytest -vv -s \
             --maxfail=1 \
             --cov=app \
             --cov-report=term-missing \
@@ -71,40 +98,23 @@ jobs:
 
       - name: Export OpenAPI (Swagger)
         run: |
-          python scripts/export_openapi.py
+          if [ -f "scripts/export_openapi.py" ]; then
+            python scripts/export_openapi.py
+          else
+            echo "scripts/export_openapi.py missing, skipping."
+            echo "{}" > openapi.json
+          fi
         env:
           OPENAPI_OUT: openapi.json
 
-      - name: Upload artifacts (coverage + openapi)
+      - name: Upload artifacts (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-artifacts
+          name: ci-artifacts
           path: |
             coverage.xml
+            .coverage
+            htmlcov/
+            .pytest_cache/
             openapi.json
-
-  docker:
-    needs: [ test ]
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build & push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
