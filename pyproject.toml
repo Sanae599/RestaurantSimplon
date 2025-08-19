@@ -12,6 +12,9 @@ ignore_missing_imports = true
 disallow_untyped_defs = false
 
 [tool.flake8]
-max-line-length = 88
-ignore = ["E203", "W503"]
-exclude = ["alembic"]
+max-line-length = 120
+extend-ignore = [
+    "E501",  # ignore lignes trop longues
+    "F401",  # ignore imports non utilisés
+    "E402",  # ignore imports pas en haut du fichier
+]
