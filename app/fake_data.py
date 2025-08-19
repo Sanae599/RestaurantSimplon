@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from faker import Faker
 from sqlalchemy import text
 
-from app.enumerations import *
+from app.enumerations import Role, Category, Status, StatusDelivery
 from app.models import Delivery, Order, OrderItem, Product, User
 from app.security import hash_password
 
