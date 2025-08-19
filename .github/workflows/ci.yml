@@ -1,4 +1,4 @@
-name: CI - Tests & Coverage (debug)
+name: CI - Lint, Tests & Coverage
 
 on:
   push:
@@ -8,55 +8,9 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
-#JOB 1 : QUALITÉ (black / isort / flake8 / mypy)
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dev tools
-        run: |
-          python -m pip install --upgrade pip
-          # si tu as requirements-dev.txt, décommente la ligne suivante et ajoute-y black/isort/flake8/mypy
-          # pip install -r requirements-dev.txt
-          pip install black isort flake8 mypy
-
-      - name: Show versions
-        run: |
-          black --version
-          isort --version
-          flake8 --version
-          mypy --version
-
-      - name: Black
-        run: black .
-
-      - name: Isort 
-        run: isort .
-
-      - name: Flake8
-        run: |
-          flake8 app tests \
-            --max-line-length 120 \
-            --extend-ignore E501,F401,E402,F811,F821,F841 \
-            --exclude alembic,venv,.venv,__pycache__,.git
-
-
-      - name: Mypy (typing)
-        run: mypy app
-
-  #JOB 2 : TESTS (ne tourne que si lint est OK)
   test:
-    needs: [ lint ]
     runs-on: ubuntu-latest
 
     services:
@@ -91,46 +45,39 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install runtime deps
+      - name: Install deps (app + dev)
         run: |
-          set -xe
           python -m pip install --upgrade pip
           pip install -r requirements.txt || true
-          pip install pytest pytest-cov alembic psycopg2-binary httpx
+          pip install pytest pytest-cov httpx alembic psycopg2-binary
+          pip install flake8 mypy black isort
 
-      - name: Show env & versions
+      # --- Lint (flake8) tolérant ---
+      - name: Lint (flake8)
         run: |
-          set -x
-          python -V
-          pip show pytest pytest-cov httpx fastapi starlette sqlmodel alembic psycopg2-binary
-          echo "DATABASE_URL=$DATABASE_URL"
-          echo "TESTING=$TESTING"
-          echo "SECRET_KEY set? $([ -n "$SECRET_KEY" ] && echo yes || echo no)"
-          echo "Repo tree:"
-          ls -R | sed -n '1,200p'
+          flake8 app tests \
+            --max-line-length 120 \
+            --extend-ignore E501,F401,E402,F811,F821,F841 \
+            --exclude alembic,venv,.venv,__pycache__,.git
 
-      - name: Alembic status & upgrade (if present)
+      # --- Type check (mypy) avec config dédiée ---
+      - name: Type check (mypy)
+        run: mypy app --config-file mypy.ini
+
+      - name: Alembic (si présent)
         run: |
-          set -e
           if [ -f "alembic.ini" ] || [ -f "app/alembic.ini" ]; then
-            echo "== Alembic files found, checking status =="
             alembic current || true
-            echo "== Upgrading =="
             alembic upgrade head
           else
             echo "No alembic.ini found, skipping migrations."
           fi
 
       - name: Pytest collect-only (debug)
-        run: |
-          set -xe
-          pytest --version
-          echo "=== Collecting tests (no execution) ==="
-          pytest --collect-only -q || exit $?
+        run: pytest --collect-only -q
 
-      - name: Run tests with coverage (≥60%)
+      - name: Run tests + coverage (≥60%)
         run: |
-          set -xe
           pytest -vv -s \
             --maxfail=1 \
             --cov=app \
@@ -143,7 +90,6 @@ jobs:
           if [ -f "scripts/export_openapi.py" ]; then
             python scripts/export_openapi.py
           else
-            echo "scripts/export_openapi.py missing, skipping."
             echo "{}" > openapi.json
           fi
         env:
