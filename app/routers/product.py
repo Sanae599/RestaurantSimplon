@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
+
 from app.db import get_session
-from app.models import Product, User
-from app.schemas.product import ProductRead, ProductCreate, ProductUpdate 
-from app.security import *
 from app.enumerations import Role
+from app.models import Product, User
+from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.security import *
 
 router = APIRouter(prefix="/product", tags=["product"])
 

@@ -1,14 +1,17 @@
-import bcrypt
-from datetime import datetime, timedelta, timezone
-from jose import JWTError, jwt
-from fastapi.security import OAuth2PasswordBearer
-from app.db import get_session
-from sqlmodel import Session, select
-from fastapi import Depends, HTTPException, status
-from app.models import User
-from dotenv import load_dotenv
-from app.enumerations import Role
 import os
+from datetime import datetime, timedelta, timezone
+
+import bcrypt
+from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlmodel import Session, select
+
+from app.db import get_session
+from app.enumerations import Role
+from app.models import User
+
 load_dotenv()  # lit le fichier .env à la racine du projet
 
 #Récupération des variables d'environnement

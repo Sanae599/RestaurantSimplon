@@ -1,7 +1,9 @@
-import pytest
 from datetime import datetime, timezone
-from app.models import User
+
+import pytest
 from pydantic import ValidationError
+
+from app.models import User
 
 
 def test_user_types_valide():

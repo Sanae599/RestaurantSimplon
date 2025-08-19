@@ -1,0 +1,5 @@
+#pour la dev pas pour la prod
+black
+flake8
+isort
+mypy

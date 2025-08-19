@@ -1,5 +1,7 @@
 # scripts/export_openapi.py
-import json, os
+import json
+import os
+
 from app.main import app
 
 out = os.environ.get("OPENAPI_OUT", "openapi.json")

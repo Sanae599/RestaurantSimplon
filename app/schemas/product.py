@@ -1,8 +1,11 @@
-from typing import Optional, Annotated
-from sqlmodel import SQLModel
-from pydantic import ConfigDict, field_validator, StringConstraints
 from datetime import datetime
+from typing import Annotated, Optional
+
+from pydantic import ConfigDict, StringConstraints, field_validator
+from sqlmodel import SQLModel
+
 from app.enumerations import Category
+
 
 #Création d'un produit (POST)
 class ProductCreate(SQLModel):

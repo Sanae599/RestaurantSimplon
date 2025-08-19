@@ -1,8 +1,10 @@
-import pytest
 from datetime import datetime
+
+import pytest
 from pydantic import ValidationError
-from app.schemas.product import ProductCreate, ProductUpdate
+
 from app.enumerations import Category
+from app.schemas.product import ProductCreate, ProductUpdate
 
 # Tests ProductCreate
 

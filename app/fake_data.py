@@ -1,10 +1,12 @@
-from faker import Faker
-from app.models import User, Product, Order, OrderItem, Delivery
 import random
-from datetime import datetime, timedelta, timezone  
-from app.enumerations import *
-from app.security import hash_password
+from datetime import datetime, timedelta, timezone
+
+from faker import Faker
 from sqlalchemy import text
+
+from app.enumerations import *
+from app.models import Delivery, Order, OrderItem, Product, User
+from app.security import hash_password
 
 # créee une instance de Faker
 fake = Faker()

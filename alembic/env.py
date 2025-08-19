@@ -1,9 +1,12 @@
+import os
+import sys
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-from sqlmodel import SQLModel
+
 from dotenv import load_dotenv
-import os, sys
+from sqlalchemy import engine_from_config, pool
+from sqlmodel import SQLModel
+
+from alembic import context
 
 #Path setup
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,6 +28,7 @@ config.set_main_option("sqlalchemy.url", db_url)
 
 #Import models pour target_metadata
 from app import models
+
 target_metadata = SQLModel.metadata
 
 # Fonctions de migration

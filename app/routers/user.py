@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlmodel import Session, select
+
 from app.db import get_session
 from app.models import User
-from app.schemas.user import UserRead, UserCreate, UserUpdate 
+from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.security import *
-from fastapi import HTTPException
-from sqlalchemy import select
 
 router = APIRouter(prefix="/user", tags=["user"])
 
