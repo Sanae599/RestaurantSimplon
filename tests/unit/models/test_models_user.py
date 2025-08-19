@@ -16,13 +16,13 @@ def test_user_types_valide():
         password_hashed="test",
         address_user="123 rue aaa",
         phone="0612345678",
-        created_at=datetime.now(timezone.utc)
+        created_at=datetime.now(timezone.utc),
     )
 
     assert isinstance(user.id, int)
     assert isinstance(user.first_name, str)
     assert isinstance(user.last_name, str)
-    assert isinstance(user.email, str) 
+    assert isinstance(user.email, str)
     assert "@" in user.email
     assert isinstance(user.role, str)
     assert isinstance(user.password_hashed, str)
@@ -30,13 +30,13 @@ def test_user_types_valide():
     assert isinstance(user.phone, str)
     assert isinstance(user.created_at, datetime)
 
+
 def test_user_optional_fields_none():
     # Check champs optional
     user = User(
-        address_user=None,  
-        phone=None,        
+        address_user=None,
+        phone=None,
     )
     assert user.address_user is None
     assert user.phone is None
-    assert user.id is None 
-
+    assert user.id is None

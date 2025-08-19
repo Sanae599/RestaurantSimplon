@@ -1,11 +1,13 @@
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import status
-
+from fastapi.testclient import TestClient
 
 # LISTER LES COMMANDES
 
-def test_lister_les_commandes_employee(client: TestClient, override_get_current_employee):
+
+def test_lister_les_commandes_employee(
+    client: TestClient, override_get_current_employee
+):
     resp = client.get("/orders/")
     assert resp.status_code == status.HTTP_200_OK
     assert isinstance(resp.json(), list)
@@ -18,7 +20,10 @@ def test_lister_les_commandes_client(client: TestClient, override_get_current_cl
 
 # CRÉER DES COMMANDES
 
-def test_creer_une_commande_client(client: TestClient, produit, override_get_current_client):
+
+def test_creer_une_commande_client(
+    client: TestClient, produit, override_get_current_client
+):
     payload = {
         "items": [{"product_id": produit.id, "quantity": 2}],
         "note": "Sans oignons",
@@ -47,6 +52,7 @@ def test_creer_une_commande_admin_pour_client(
 
 # LIRE / PATCHER / SUPPRIMER
 
+
 def test_admin_peut_lire_commande_par_id(
     client: TestClient, client_user, produit, override_get_current_admin
 ):
@@ -58,7 +64,10 @@ def test_admin_peut_lire_commande_par_id(
             "note": "lecture par admin",
         },
     )
-    assert created.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK), created.text
+    assert created.status_code in (
+        status.HTTP_201_CREATED,
+        status.HTTP_200_OK,
+    ), created.text
     order_id = created.json()["id"]
 
     # côté staff, ton API peut exiger ?user_id=
@@ -78,13 +87,19 @@ def test_employee_peut_mettre_a_jour_statut(
             "note": "maj statut",
         },
     )
-    assert created.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK), created.text
+    assert created.status_code in (
+        status.HTTP_201_CREATED,
+        status.HTTP_200_OK,
+    ), created.text
     order_id = created.json()["id"]
 
     # route attend des strings pour status. Ex: "En préparation", "Prete", "Servie"
     update = {"status": "En préparation"}
     patched = client.patch(f"/orders/{order_id}?user_id={client_user.id}", json=update)
-    assert patched.status_code in (status.HTTP_200_OK, status.HTTP_204_NO_CONTENT), patched.text
+    assert patched.status_code in (
+        status.HTTP_200_OK,
+        status.HTTP_204_NO_CONTENT,
+    ), patched.text
 
 
 def test_client_ne_peut_pas_supprimer_commande_autrui(
@@ -99,13 +114,18 @@ def test_client_ne_peut_pas_supprimer_commande_autrui(
             "note": "commande admin",
         },
     )
-    assert created.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK), created.text
+    assert created.status_code in (
+        status.HTTP_201_CREATED,
+        status.HTTP_200_OK,
+    ), created.text
     order_id = created.json()["id"]
     # Pas de suppression ici (on la tente en tant que client dans le test suivant)
 
 
 @pytest.mark.usefixtures("override_get_current_client")
-def test_client_echoue_a_supprimer_commande_autrui(client: TestClient, admin_user, produit):
+def test_client_echoue_a_supprimer_commande_autrui(
+    client: TestClient, admin_user, produit
+):
     # On crée une commande appartenant à l'admin, puis on essaie de la supprimer côté client
     from app.main import app as fastapi_app
     from app.routers.user import get_current_user as dep
@@ -121,7 +141,10 @@ def test_client_echoue_a_supprimer_commande_autrui(client: TestClient, admin_use
                 "note": "à protéger",
             },
         )
-        assert created.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK), created.text
+        assert created.status_code in (
+            status.HTTP_201_CREATED,
+            status.HTTP_200_OK,
+        ), created.text
         order_id = created.json()["id"]
     finally:
         fastapi_app.dependency_overrides = saved
@@ -141,8 +164,14 @@ def test_admin_peut_supprimer_commande(
             "note": "à supprimer",
         },
     )
-    assert created.status_code in (status.HTTP_201_CREATED, status.HTTP_200_OK), created.text
+    assert created.status_code in (
+        status.HTTP_201_CREATED,
+        status.HTTP_200_OK,
+    ), created.text
     order_id = created.json()["id"]
 
     deleted = client.delete(f"/orders/{order_id}?user_id={client_user.id}")
-    assert deleted.status_code in (status.HTTP_200_OK, status.HTTP_204_NO_CONTENT), deleted.text
+    assert deleted.status_code in (
+        status.HTTP_200_OK,
+        status.HTTP_204_NO_CONTENT,
+    ), deleted.text

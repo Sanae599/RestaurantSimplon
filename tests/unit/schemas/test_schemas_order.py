@@ -13,6 +13,7 @@ def test_order_item_quantity_valid():
     assert item.product_id == 1
     assert item.quantity == 3
 
+
 @pytest.mark.parametrize("bad_qty", [0, -1, -5])
 def test_order_item_quantity_invalid(bad_qty):
     """
@@ -25,7 +26,10 @@ def test_order_item_quantity_invalid(bad_qty):
     # Message défini dans notre validator:
     #   "La quantité doit être ≥ 1."
     assert "La quantité doit être ≥ 1." in str(exc.value)
-#Cas invalides (0, -1, -5) → rejetés correctement
+
+
+# Cas invalides (0, -1, -5) → rejetés correctement
+
 
 # OrderCreateWithItems
 def test_order_create_with_items_valid_minimal():
@@ -34,8 +38,7 @@ def test_order_create_with_items_valid_minimal():
     user_id peut être None (côté route on utilisera le user connecté)
     """
     order = OrderCreateWithItems(
-        user_id=None,
-        items=[OrderItemCreateInOrder(product_id=10, quantity=2)]
+        user_id=None, items=[OrderItemCreateInOrder(product_id=10, quantity=2)]
     )
     assert len(order.items) == 1
     assert order.items[0].product_id == 10
