@@ -1,10 +1,11 @@
+from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from app.models import Product
-from app.enumerations import Category
-from datetime import datetime, timezone
 
+from app.enumerations import Category
+from app.models import Product
 
 # TEST LISTER LES PRODUITS
 
