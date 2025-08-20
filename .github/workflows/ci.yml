@@ -74,4 +74,7 @@ jobs:
           name: ci-artifacts
           path: |
             coverage.xml
+            .coverage
+            htmlcov/
+            .pytest_cache/
             openapi.json
