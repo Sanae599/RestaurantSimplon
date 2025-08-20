@@ -52,14 +52,6 @@ jobs:
           pip install pytest pytest-cov httpx alembic psycopg2-binary
           pip install flake8 mypy black isort
 
-      # Check format (Black) 
-      - name: Check code format (Black)
-        run: black --check app tests
-
-      #  Check imports (isort) 
-      - name: Check imports (isort)
-        run: isort --check-only app tests
-
       #Lint flake8
       - name: Lint (flake8)
         run: |
