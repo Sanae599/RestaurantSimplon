@@ -38,7 +38,7 @@ jobs:
         run: black .   # Vérifie que le code est bien formaté (sans le modifier)
 
       - name: Run flake8 (lint)
-        run: flake8           # Analyse statique du code (PEP8, erreurs, variables inutilisées...)
+        run: flake8 .        # Analyse statique du code (PEP8, erreurs, variables inutilisées...)
 
       - name: Run isort (imports check)
         run: isort .   # Vérifie que les imports sont bien triés
