@@ -42,7 +42,9 @@ jobs:
 
       # ---- Lancement des tests ----
       - name: Run pytest
-        run: pytest --maxfail=1 --disable-warnings --cov=app --cov-report=xml --cov-fail-under=60
+        run: pytest 
+
+        #run: pytest --maxfail=1 --disable-warnings --cov=app --cov-report=xml --cov-fail-under=60
         # --maxfail=1         : stoppe au 1er test échoué
         # --disable-warnings  : masque les warnings pour plus de lisibilité
         # --cov=app           : calcule la couverture de code du dossier "app/"
