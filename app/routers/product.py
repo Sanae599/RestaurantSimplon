@@ -5,15 +5,10 @@ from app.db import get_session
 from app.enumerations import Role
 from app.models import Product, User
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
-from app.security import (
-    check_admin,
-    check_admin_employee,
-    check_email_exists,
-    check_name_product_exists,
-    check_product_exists,
-    get_current_user,
-    hash_password,
-)
+from app.security import (check_admin, check_admin_employee,
+                          check_email_exists, check_name_product_exists,
+                          check_product_exists, get_current_user,
+                          hash_password)
 
 router = APIRouter(prefix="/product", tags=["product"])
 
