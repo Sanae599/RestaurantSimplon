@@ -6,25 +6,27 @@ from app.enumerations import Category
 from datetime import datetime, timezone
 
 
-
 # TEST LISTER LES PRODUITS
+
 
 def test_lister_les_produits_admin(client, produit, override_get_current_admin):
     response = client.get("/product/")
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    assert len(data) > 0             
+    assert len(data) > 0
     assert data[0]["name"] == produit.name
+
 
 def test_lister_les_produits_client(client, produit, override_get_current_client):
     response = client.get("/product/")
     # Ici le client peut juste lire, donc 200 ou 403 selon ton endpoint
     # Si tu veux interdire la liste pour le client, 403
-    assert response.status_code == 403  
+    assert response.status_code == 403
 
 
 # TEST CREER UN PRODUIT
+
 
 def test_creer_un_produit_admin(client: TestClient, override_get_current_admin):
     data = {
@@ -33,13 +35,13 @@ def test_creer_un_produit_admin(client: TestClient, override_get_current_admin):
         "category": "Plat principal",
         "description": "Description Test",
         "stock": 100,
-        "created_at": datetime.now(timezone.utc).isoformat()  
-
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     response = client.post("/product/", json=data)
-    assert response.status_code == 201, response.json()  
+    assert response.status_code == 201, response.json()
     result = response.json()
     assert result["name"] == data["name"]
+
 
 def test_creer_un_produit_client(client: TestClient, override_get_current_client):
     data = {
@@ -47,7 +49,7 @@ def test_creer_un_produit_client(client: TestClient, override_get_current_client
         "unit_price": 9.99,
         "category": "Plat principal",
         "description": "Description Test",
-        "stock": 100
+        "stock": 100,
     }
     response = client.post("/product/", json=data)
     # interdit pour le client
@@ -56,8 +58,17 @@ def test_creer_un_produit_client(client: TestClient, override_get_current_client
 
 # TEST PATCH (mettre à jour) UN PRODUIT
 
-def test_patch_product_admin(client: TestClient, session: Session, override_get_current_admin):
-    produit = Product(name="Produit Patch", unit_price=5.0, category="Plat principal", description="Desc", stock=20)
+
+def test_patch_product_admin(
+    client: TestClient, session: Session, override_get_current_admin
+):
+    produit = Product(
+        name="Produit Patch",
+        unit_price=5.0,
+        category="Plat principal",
+        description="Desc",
+        stock=20,
+    )
     session.add(produit)
     session.commit()
     session.refresh(produit)
@@ -69,8 +80,17 @@ def test_patch_product_admin(client: TestClient, session: Session, override_get_
     assert result["unit_price"] == 7.5
     assert result["stock"] == 30
 
-def test_patch_product_client(client: TestClient, session: Session, override_get_current_client):
-    produit = Product(name="Produit Patch", unit_price=5.0, category="Plat principal", description="Desc", stock=20)
+
+def test_patch_product_client(
+    client: TestClient, session: Session, override_get_current_client
+):
+    produit = Product(
+        name="Produit Patch",
+        unit_price=5.0,
+        category="Plat principal",
+        description="Desc",
+        stock=20,
+    )
     session.add(produit)
     session.commit()
     session.refresh(produit)
@@ -82,8 +102,17 @@ def test_patch_product_client(client: TestClient, session: Session, override_get
 
 # TEST SUPPRIMER UN PRODUIT
 
-def test_supprimer_un_produit_admin(client: TestClient, session: Session, override_get_current_admin):
-    produit = Product(name="Produit Delete", unit_price=1.0, category="Plat principal", description="Desc", stock=10)
+
+def test_supprimer_un_produit_admin(
+    client: TestClient, session: Session, override_get_current_admin
+):
+    produit = Product(
+        name="Produit Delete",
+        unit_price=1.0,
+        category="Plat principal",
+        description="Desc",
+        stock=10,
+    )
     session.add(produit)
     session.commit()
     session.refresh(produit)
@@ -92,8 +121,17 @@ def test_supprimer_un_produit_admin(client: TestClient, session: Session, overri
     assert response.status_code == 204
     assert session.get(Product, produit.id) is None
 
-def test_supprimer_un_produit_client(client: TestClient, session: Session, override_get_current_client):
-    produit = Product(name="Produit Delete", unit_price=1.0, category="Plat principal", description="Desc", stock=10)
+
+def test_supprimer_un_produit_client(
+    client: TestClient, session: Session, override_get_current_client
+):
+    produit = Product(
+        name="Produit Delete",
+        unit_price=1.0,
+        category="Plat principal",
+        description="Desc",
+        stock=10,
+    )
     session.add(produit)
     session.commit()
     session.refresh(produit)
