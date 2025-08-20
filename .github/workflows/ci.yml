@@ -2,7 +2,7 @@ name: CI Pipeline   # Nom affiché dans GitHub Actions
 
 on:
   push:
-    branches: [ "main", "develop", "branch_azhar" ]
+    branches: [ "main", "develop", "branch_sanae" ]
   pull_request:
     branches: [ "main", "develop" ]
 
