@@ -7,6 +7,7 @@ from sqlmodel import Session, create_engine
 from app.fake_data import add_fake_data, reset_db
 from app.routers import delivery, login, order, product, user
 
+
 app = FastAPI()
 
 load_dotenv()  # charge DATABASE_URL

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from enumerations import Role
+from app.enumerations import Role
 from app.db import get_session
 from app.models import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
