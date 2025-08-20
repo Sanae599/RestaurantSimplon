@@ -61,6 +61,8 @@ jobs:
           
         env:
           OPENAPI_OUT: openapi.json
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATAURL: ${{ secrets.DATABASE_URL }}   
 
           #Pour récupérer la doc depuis le github 
       - name: Upload artifacts (always)
