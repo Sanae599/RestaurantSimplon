@@ -1,18 +1,22 @@
+import os
+import sys
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-from sqlmodel import SQLModel
-from dotenv import load_dotenv
-import os, sys
 
-#Path setup
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+from sqlmodel import SQLModel
+
+from alembic import context
+from app import models  # noqa: F401  # important pour que Alembic voie les tables
+
+# Path setup
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 load_dotenv()
 
-#Alembic config
+# Alembic config
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -23,9 +27,11 @@ if not db_url:
 
 config.set_main_option("sqlalchemy.url", db_url)
 
-#Import models pour target_metadata
+# Import models pour target_metadata
 from app import models
+
 target_metadata = SQLModel.metadata
+
 
 # Fonctions de migration
 def run_migrations_offline() -> None:
@@ -47,10 +53,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
 

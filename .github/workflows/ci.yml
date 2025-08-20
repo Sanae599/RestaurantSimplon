@@ -1,0 +1,99 @@
+name: CI - Lint, Tests & Coverage
+
+on:
+  push:
+    branches: [ "main", "develop", "branch_sanae" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: restau
+          POSTGRES_PASSWORD: restau_pwd
+          POSTGRES_DB: restau_db
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd="pg_isready -U restau -d restau_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      DATABASE_URL: postgresql+psycopg2://restau:restau_pwd@localhost:5432/restau_db
+      PYTHONUNBUFFERED: "1"
+      TESTING: "true"
+      SECRET_KEY: "ci-test-secret"
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps (app + dev)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install pytest pytest-cov httpx alembic psycopg2-binary
+          pip install flake8 mypy black isort
+
+      #Lint flake8
+      - name: Lint (flake8)
+        run: |
+          flake8 app tests \
+            --max-line-length 120 \
+            --extend-ignore E501,F401,E402,F811,F821,F841 \
+            --exclude alembic,venv,.venv,__pycache__,.git
+
+      #Type check (mypy) avec config dédiée
+      - name: Type check (mypy)
+        run: mypy app --config-file mypy.ini
+
+      - name: Pytest collect-only (debug)
+        run: pytest --collect-only -q
+
+      - name: Run tests + coverage (≥60%)
+        run: |
+          pytest -vv -s \
+            --maxfail=1 \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --cov-fail-under=60
+
+      - name: Export OpenAPI (Swagger)
+        run: |
+          if [ -f "scripts/export_openapi.py" ]; then
+            python scripts/export_openapi.py
+          else
+            echo "{}" > openapi.json
+          fi
+        env:
+          OPENAPI_OUT: openapi.json
+
+      - name: Upload artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: |
+            coverage.xml
+            .coverage
+            htmlcov/
+            .pytest_cache/
+            openapi.json
