@@ -5,16 +5,12 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-restau}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-restau_pwd}
-      POSTGRES_DB: ${POSTGRES_DB:-restau_db}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-restau} -d ${POSTGRES_DB:-restau_db}"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -22,15 +18,13 @@ services:
   api:
     build: .
     container_name: restau_api
+    working_dir: /app  
     env_file:
       - .env
     environment:
       # L’API et Alembic lisent DATABASE_URL depuis .env
-      DATABASE_URL: ${DATABASE_URL}
-      SECRET_KEY: ${SECRET_KEY}
-      ALGORITHM: ${ALGORITHM:-HS256}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      ALEMBIC_CONFIG: /app/alembic.ini
+      PYTHONPATH: /app 
     ports:
       - "8000:8000"
     depends_on:
@@ -41,4 +35,8 @@ services:
       - .:/app
 
 volumes:
+<<<<<<< HEAD
   pg_data: 
+=======
+  pg_data:
+>>>>>>> e22fd4310173f3d31e026583f25eb34cf7355497

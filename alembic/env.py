@@ -1,26 +1,64 @@
 import os
+import sys
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
-from alembic import context
-from sqlmodel import SQLModel
-from app import models
-from dotenv import load_dotenv
 
-# Charger .env
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
+from sqlmodel import SQLModel
+
+from alembic import context
+from app import models  # noqa: F401  # important pour que Alembic voie les tables
+
+# Path setup
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 load_dotenv()
 
-# Récupérer DATABASE_URL depuis l'environnement
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL non défini dans .env")
-
-# Appliquer à Alembic
+# Alembic config
 config = context.config
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
-
-# Config logs
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Metadatas pour autogenerate
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    raise RuntimeError("Aucune DATABASE_URL trouvée (ni env, ni alembic.ini)")
+
+config.set_main_option("sqlalchemy.url", db_url)
+
+# Import models pour target_metadata
+from app import models
+
 target_metadata = SQLModel.metadata
+
+
+# Fonctions de migration
+def run_migrations_offline() -> None:
+    context.configure(
+        url=db_url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()

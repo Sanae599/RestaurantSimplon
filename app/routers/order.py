@@ -1,19 +1,23 @@
 from datetime import date as dt_date
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
-from sqlalchemy.orm import selectinload
 from sqlalchemy import func
+from sqlalchemy.orm import selectinload
+from sqlmodel import Session, select
 
 from app.db import get_session
-from app.security import get_current_user
+from app.enumerations import Role, Status
 from app.models import Order, OrderItem, Product, User
 from app.schemas.order import (
-    OrderReadWithItems, OrderItemInOrderRead,
-    OrderCreateWithItems, OrderPatchWithItems
+    OrderCreateWithItems,
+    OrderItemInOrderRead,
+    OrderPatchWithItems,
+    OrderReadWithItems,
 )
-from app.enumerations import Status, Role
+from app.security import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["orders"])
+
 
 # Lister toutes les commandes — admin & employée
 @router.get("/", response_model=list[OrderReadWithItems])
@@ -22,10 +26,14 @@ def lister_les_commandes(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Seuls les administrateurs et les employées peuvent lister les commandes.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs et les employées peuvent lister les commandes.",
+        )
     rows = session.exec(
-        select(Order).options(selectinload(Order.order_items).selectinload(OrderItem.product))
+        select(Order).options(
+            selectinload(Order.order_items).selectinload(OrderItem.product)
+        )
     ).all()
     result: list[OrderReadWithItems] = []
     for c in rows:
@@ -34,12 +42,13 @@ def lister_les_commandes(
             OrderItemInOrderRead(
                 product_id=oi.product_id,
                 product_name=(oi.product.name if oi.product else ""),
-                quantity=oi.quantity
+                quantity=oi.quantity,
             )
             for oi in c.order_items
         ]
         result.append(dto)
     return result
+
 
 # Lire par date — client = seulement ses commandes ; staff = toutes
 # Lire par date — réservé staff
@@ -52,7 +61,7 @@ def lire_commandes_par_date(
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Seuls les administrateurs et les employées peuvent voir les commandes par date."
+            detail="Seuls les administrateurs et les employées peuvent voir les commandes par date.",
         )
 
     stmt = (
@@ -69,12 +78,13 @@ def lire_commandes_par_date(
             OrderItemInOrderRead(
                 product_id=oi.product_id,
                 product_name=(oi.product.name if oi.product else ""),
-                quantity=oi.quantity
+                quantity=oi.quantity,
             )
             for oi in c.order_items
         ]
         result.append(dto)
     return result
+
 
 # Lire par utilisateur — client = lui-même ; staff = n'importe qui
 @router.get("/user/{user_id}", response_model=list[OrderReadWithItems])
@@ -84,7 +94,9 @@ def lire_les_commandes_par_utilisateur(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role == Role.CLIENT and current_user.id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès interdit")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Accès interdit"
+        )
 
     rows = session.exec(
         select(Order)
@@ -98,12 +110,13 @@ def lire_les_commandes_par_utilisateur(
             OrderItemInOrderRead(
                 product_id=oi.product_id,
                 product_name=(oi.product.name if oi.product else ""),
-                quantity=oi.quantity
+                quantity=oi.quantity,
             )
             for oi in c.order_items
         ]
         result.append(dto)
     return result
+
 
 # Lire par id commande — client = seulement sa commande ; staff = OK
 @router.get("/{order_id}", response_model=OrderReadWithItems)
@@ -121,28 +134,35 @@ def lire_une_commande_par_orderid(
         raise HTTPException(status_code=404, detail="Commande non trouvée")
 
     if current_user.role == Role.CLIENT and c.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Accès interdit")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Accès interdit"
+        )
 
     dto = OrderReadWithItems.model_validate(c, from_attributes=True)
     dto.items = [
         OrderItemInOrderRead(
             product_id=oi.product_id,
             product_name=(oi.product.name if oi.product else ""),
-            quantity=oi.quantity
+            quantity=oi.quantity,
         )
         for oi in c.order_items
     ]
     return dto
 
+
 # Créer — client = pour lui ; staff = pour un user existant
-@router.post("/", response_model=OrderReadWithItems, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=OrderReadWithItems, status_code=status.HTTP_201_CREATED
+)
 def creer_une_commande(
     payload: OrderCreateWithItems,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
     if not payload.items:
-        raise HTTPException(status_code=422, detail="La commande doit contenir au moins un article.")
+        raise HTTPException(
+            status_code=422, detail="La commande doit contenir au moins un article."
+        )
 
     if current_user.role == Role.CLIENT:
         user_id = current_user.id
@@ -185,11 +205,12 @@ def creer_une_commande(
         OrderItemInOrderRead(
             product_id=oi.product_id,
             product_name=(oi.product.name if oi.product else ""),
-            quantity=oi.quantity
+            quantity=oi.quantity,
         )
         for oi in c.order_items
     ]
     return dto
+
 
 # Supprimer — admin & employée
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -199,13 +220,16 @@ def supprimer_une_commande(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Seuls les administrateurs et les employées peuvent supprimer des commandes.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs et les employées peuvent supprimer des commandes.",
+        )
     commande = session.get(Order, order_id)
     if not commande:
         raise HTTPException(status_code=404, detail="Commande non trouvée")
     session.delete(commande)
     session.commit()
+
 
 # Patch — admin & employée
 @router.patch("/{order_id}", response_model=OrderReadWithItems)
@@ -216,8 +240,10 @@ def patch_commande(
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Seuls les administrateurs et les employées peuvent modifier les commandes.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Seuls les administrateurs et les employées peuvent modifier les commandes.",
+        )
 
     order = session.exec(
         select(Order)
@@ -244,18 +270,28 @@ def patch_commande(
         session.flush()
         consolidated: dict[int, int] = {}
         for it in payload.items:
-            consolidated[it.product_id] = consolidated.get(it.product_id, 0) + it.quantity
+            consolidated[it.product_id] = (
+                consolidated.get(it.product_id, 0) + it.quantity
+            )
         for product_id, quantity in consolidated.items():
             product = session.get(Product, product_id)
             if not product:
-                raise HTTPException(status_code=404, detail=f"Produit {product_id} introuvable")
+                raise HTTPException(
+                    status_code=404, detail=f"Produit {product_id} introuvable"
+                )
             if quantity <= 0:
-                raise HTTPException(status_code=422, detail="La quantité doit être ≥ 1.")
-            session.add(OrderItem(order_id=order.id, product_id=product_id, quantity=quantity))
+                raise HTTPException(
+                    status_code=422, detail="La quantité doit être ≥ 1."
+                )
+            session.add(
+                OrderItem(order_id=order.id, product_id=product_id, quantity=quantity)
+            )
 
     session.flush()
     fresh = session.exec(
-        select(OrderItem).where(OrderItem.order_id == order.id).options(selectinload(OrderItem.product))
+        select(OrderItem)
+        .where(OrderItem.order_id == order.id)
+        .options(selectinload(OrderItem.product))
     ).all()
     total = 0.0
     for oi in fresh:
@@ -276,7 +312,7 @@ def patch_commande(
         OrderItemInOrderRead(
             product_id=oi.product_id,
             product_name=(oi.product.name if oi.product else ""),
-            quantity=oi.quantity
+            quantity=oi.quantity,
         )
         for oi in c.order_items
     ]
