@@ -1,17 +1,19 @@
 import re
-from typing import Annotated, Optional
-from sqlmodel import SQLModel
-from pydantic import EmailStr, ConfigDict, field_validator, StringConstraints
-from app.enumerations import Role
 from datetime import datetime
-from app.models import User
+from typing import Annotated, Optional
 
-#Création d'un utilisateur (POST)
+from pydantic import ConfigDict, EmailStr, StringConstraints, field_validator
+from sqlmodel import SQLModel
+
+from app.enumerations import Role
+
+
+# Création d'un utilisateur (POST)
 class UserCreate(SQLModel):
     first_name: Annotated[str, StringConstraints(max_length=50)]
     last_name: Annotated[str, StringConstraints(max_length=50)]
     email: EmailStr
-    password : str # = None ? 
+    password: str  # = None ?
     address_user: str
     phone: str
     created_at: Optional[datetime] = None
@@ -22,17 +24,19 @@ class UserCreate(SQLModel):
         # validation à l'init du model et à l'affectation des valeurs
         validate_assignment=True,
         # use enum
-        use_enum_values=True
+        use_enum_values=True,
     )
 
     @field_validator("phone")
     def validate_phone(cls, value: str) -> str:
         # le num commence par '0' + 9 chiffres
-        if not re.match(r'^0[0-9](\d{2}){4}$', value):
-            raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
+        if not re.match(r"^0[0-9](\d{2}){4}$", value):
+            raise ValueError(
+                "Le numéro de téléphone doit être un numéro français valide."
+            )
         return value
 
-    
+
 class UserRead(SQLModel):
     id: int
     first_name: str
@@ -43,9 +47,10 @@ class UserRead(SQLModel):
     phone: str
     created_at: datetime
 
+
 class UserUpdate(SQLModel):
-    first_name:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
-    last_name:  Optional[Annotated[str, StringConstraints(max_length=50)]] = None
+    first_name: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
+    last_name: Optional[Annotated[str, StringConstraints(max_length=50)]] = None
     email: Optional[EmailStr] = None
     role: Optional[Role] = None
     address_user: Optional[str] = None
@@ -53,15 +58,14 @@ class UserUpdate(SQLModel):
     password: Optional[str] = None
 
     model_config = ConfigDict(
-        str_strip_whitespace=True,
-        validate_assignment=True,
-        use_enum_values=True
+        str_strip_whitespace=True, validate_assignment=True, use_enum_values=True
     )
+
     @field_validator("phone")
     def validate_phone(cls, value: str) -> str:
         # le num commence par '0' + 9 chiffres
-        if not re.match(r'^0[0-9](\d{2}){4}$', value):
-            raise ValueError("Le numéro de téléphone doit être un numéro français valide.")
+        if not re.match(r"^0[0-9](\d{2}){4}$", value):
+            raise ValueError(
+                "Le numéro de téléphone doit être un numéro français valide."
+            )
         return value
-    
-    

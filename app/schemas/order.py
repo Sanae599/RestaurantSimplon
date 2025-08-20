@@ -1,8 +1,11 @@
-from typing import Optional, List
-from sqlmodel import SQLModel
-from pydantic import ConfigDict, field_validator
-from app.enumerations import Status
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import ConfigDict, field_validator
+from sqlmodel import SQLModel
+
+from app.enumerations import Status
+
 
 class OrderRead(SQLModel):
     id: int
@@ -11,18 +14,22 @@ class OrderRead(SQLModel):
     status: Status
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class OrderItemInOrderRead(SQLModel):
     product_id: int
     quantity: int
 
+
 class OrderReadWithItems(OrderRead):
     items: List[OrderItemInOrderRead] = []
     model_config = ConfigDict(from_attributes=True)
 
+
 class OrderUpdate(SQLModel):
     status: Optional[Status] = None
+
 
 class OrderItemCreateInOrder(SQLModel):
     product_id: int
@@ -37,13 +44,13 @@ class OrderItemCreateInOrder(SQLModel):
         use_enum_values=True,
         from_attributes=True,
     )
-    
 
-    @field_validator('quantity')
+    @field_validator("quantity")
     def validate_quantity(cls, v: int) -> int:
         if v <= 0:
             raise ValueError("La quantité doit être ≥ 1.")
         return v
+
 
 class OrderCreateWithItems(SQLModel):
     # staff peut préciser user_id ; pour un client on l’ignorera et on forcera depuis le token
@@ -56,11 +63,12 @@ class OrderCreateWithItems(SQLModel):
         use_enum_values=True,
     )
 
-    @field_validator('items')
+    @field_validator("items")
     def validate_items_not_empty(cls, v):
         if not v:
             raise ValueError("La commande doit contenir au moins un article.")
         return v
+
 
 class OrderPatchWithItems(SQLModel):
     user_id: Optional[int] = None
