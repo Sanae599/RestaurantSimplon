@@ -57,12 +57,8 @@ jobs:
 
 
       - name: Export OpenAPI (Swagger)
-        run: |
-          if [ -f "export_openapi.py" ]; then
-            python export_openapi.py
-          else
-            echo "{}" > openapi.json
-          fi
+        run: python export_openapi.py
+          
         env:
           OPENAPI_OUT: openapi.json
 
@@ -74,7 +70,4 @@ jobs:
           name: ci-artifacts
           path: |
             coverage.xml
-            .coverage
-            htmlcov/
-            .pytest_cache/
             openapi.json
