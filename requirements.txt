@@ -43,5 +43,5 @@ black
 flake8
 isort
 mypy
-pytest -cov
+pytest-cov
 pytest
