@@ -8,8 +8,12 @@ from sqlmodel import Session, select
 from app.db import get_session
 from app.enumerations import Role, Status
 from app.models import Order, OrderItem, Product, User
-from app.schemas.order import (OrderCreateWithItems, OrderItemInOrderRead,
-                               OrderPatchWithItems, OrderReadWithItems)
+from app.schemas.order import (
+    OrderCreateWithItems,
+    OrderItemInOrderRead,
+    OrderPatchWithItems,
+    OrderReadWithItems,
+)
 from app.security import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["orders"])

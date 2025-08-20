@@ -7,8 +7,7 @@ from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
 from alembic import context
-from app import \
-    models  # noqa: F401  # important pour que Alembic voie les tables
+from app import models  # noqa: F401  # important pour que Alembic voie les tables
 
 # Path setup
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
