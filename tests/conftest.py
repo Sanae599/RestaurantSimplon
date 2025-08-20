@@ -1,8 +1,11 @@
 import pytest
 from sqlmodel import SQLModel, create_engine, Session
 from fastapi.testclient import TestClient
+import os
+from dotenv import load_dotenv
 from dotenv import load_dotenv
 
+load_dotenv()
 load_dotenv()
 from app.db import get_session
 from app.main import app
