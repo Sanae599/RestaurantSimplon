@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-
+from enumerations import Role
 from app.db import get_session
 from app.models import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
@@ -58,7 +58,7 @@ def creer_un_utilisateur(
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
-        role=user.role,
+        role=Role.CLIENT,
         password_hashed=hash_password(user.password),
         address_user=user.address_user,
         phone=user.phone,
