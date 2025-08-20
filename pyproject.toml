@@ -13,8 +13,3 @@ disallow_untyped_defs = false
 
 [tool.flake8]
 max-line-length = 120
-extend-ignore = [
-    "E501",  # ignore lignes trop longues
-    "F401",  # ignore imports non utilisés
-    "E402",  # ignore imports pas en haut du fichier
-]
