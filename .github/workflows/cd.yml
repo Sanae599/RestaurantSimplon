@@ -41,7 +41,7 @@ jobs:
           context: .     # Contexte de construction (le répertoire actuel)
           push: true     # Pousse l'image sur DockerHub après la construction
           tags: |        # Tags attribués à l'image
-            myusername/fastapi-sqlmodel:latest        # Tag "latest"
-            myusername/fastapi-sqlmodel:${{ env.VERSION }}  # Tag correspondant à la version (ex: v1.0.0)
+            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-sqlmodel:latest # Tag "latest"
+            ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-sqlmodel:${{ env.VERSION }} # Tag correspondant à la version (ex: v1.0.0)
 
 
