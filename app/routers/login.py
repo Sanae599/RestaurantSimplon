@@ -6,9 +6,15 @@ from sqlmodel import Session, select
 from app.db import get_session
 from app.models import User
 from app.schemas.user import UserCreate
-from app.security import (ALGORITHM, SECRET_KEY, create_access_token,
-                          create_refresh_token, get_current_user,
-                          hash_password, verify_password)
+from app.security import (
+    ALGORITHM,
+    SECRET_KEY,
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
 
 router = APIRouter(prefix="/login", tags=["login"])
 
