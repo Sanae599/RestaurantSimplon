@@ -1,7 +1,10 @@
 from datetime import datetime
+
 import pytest
 from pydantic import ValidationError
-from app.models import Product  
+
+from app.models import Product
+
 
 def test_product_valid_enum():
     """Vérifie qu'un Product accepte une catégorie valide (Enum)."""

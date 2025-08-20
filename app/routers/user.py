@@ -1,18 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from app.enumerations import Role
+
 from app.db import get_session
+from app.enumerations import Role
 from app.models import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.security import (
-    check_admin,
-    check_admin_employee,
-    check_email_exists,
-    get_current_user,
-    hash_password,
-    check_admin_self,
-    check_user_exists
-)
+from app.security import (check_admin, check_admin_employee, check_admin_self,
+                          check_email_exists, check_user_exists,
+                          get_current_user, hash_password)
 
 router = APIRouter(prefix="/user", tags=["user"])
 

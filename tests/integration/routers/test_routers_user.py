@@ -1,7 +1,9 @@
 import pytest
 from sqlmodel import select
-from app.models import User
+
 from app.enumerations import Role
+from app.models import User
+
 
 def test_create_user(client, session, admin_user, override_get_current_admin):
     # new user
@@ -12,7 +14,7 @@ def test_create_user(client, session, admin_user, override_get_current_admin):
         "password": "password123",
         "role": "CLIENT",
         "address_user": "101 New Street",
-        "phone": "0613179351"
+        "phone": "0613179351",
     }
 
     # post sur route création user
@@ -25,7 +27,7 @@ def test_create_user(client, session, admin_user, override_get_current_admin):
     assert response.status_code == 201, f"Erreur inattendue: {response.text}"
     response_data = response.json()
     assert response_data["email"] == "newuser@example.com"
-    assert response_data["role"] == "client"  
+    assert response_data["role"] == "client"
 
     # check new user in base
     user_in_db = session.exec(
