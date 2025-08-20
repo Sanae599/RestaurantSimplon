@@ -9,14 +9,8 @@ on:
 jobs:
   quality-and-tests:     # Nom du job 
     runs-on: ubuntu-latest   # L'environnement d'exécution (machine virtuelle Ubuntu)
-    
-
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      ALGORITHM: "HS256"
-      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
-      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+      RT:${{ secrets.rt}}
 
     steps:
       # ---- Récupération du code source ----
