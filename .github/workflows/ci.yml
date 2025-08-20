@@ -10,7 +10,7 @@ jobs:
   quality-and-tests:     # Nom du job 
     runs-on: ubuntu-latest   # L'environnement d'exécution (machine virtuelle Ubuntu)
     env:
-      RT:${{ secrets.rt}}
+      RT: ${{ secrets.rt}}
 
     steps:
       # ---- Récupération du code source ----
