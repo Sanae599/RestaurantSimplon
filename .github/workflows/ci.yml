@@ -58,8 +58,8 @@ jobs:
 
       - name: Export OpenAPI (Swagger)
         run: |
-          if [ -f "scripts/export_openapi.py" ]; then
-            python scripts/export_openapi.py
+          if [ -f "export_openapi.py" ]; then
+            python export_openapi.py
           else
             echo "{}" > openapi.json
           fi
