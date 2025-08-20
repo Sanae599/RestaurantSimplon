@@ -52,7 +52,15 @@ jobs:
           pip install pytest pytest-cov httpx alembic psycopg2-binary
           pip install flake8 mypy black isort
 
-      # --- Lint (flake8) tolérant ---
+      # Check format (Black) 
+      - name: Check code format (Black)
+        run: black --check app tests
+
+      #  Check imports (isort) 
+      - name: Check imports (isort)
+        run: isort --check-only app tests
+
+      #Lint flake8
       - name: Lint (flake8)
         run: |
           flake8 app tests \
@@ -60,18 +68,9 @@ jobs:
             --extend-ignore E501,F401,E402,F811,F821,F841 \
             --exclude alembic,venv,.venv,__pycache__,.git
 
-      # --- Type check (mypy) avec config dédiée ---
+      #Type check (mypy) avec config dédiée
       - name: Type check (mypy)
         run: mypy app --config-file mypy.ini
-
-      - name: Alembic (si présent)
-        run: |
-          if [ -f "alembic.ini" ] || [ -f "app/alembic.ini" ]; then
-            alembic current || true
-            alembic upgrade head
-          else
-            echo "No alembic.ini found, skipping migrations."
-          fi
 
       - name: Pytest collect-only (debug)
         run: pytest --collect-only -q
