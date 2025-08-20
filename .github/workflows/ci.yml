@@ -44,7 +44,7 @@ jobs:
         run: isort .   # Vérifie que les imports sont bien triés
 
       - name: Run mypy (types check)
-        run: mypy           # Vérifie la cohérence des types statiques dans le code
+        run: mypy .         # Vérifie la cohérence des types statiques dans le code
 
       # ---- Lancement des tests ----
       - name: Run pytest
