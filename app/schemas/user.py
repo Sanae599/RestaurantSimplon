@@ -6,6 +6,7 @@ from pydantic import ConfigDict, EmailStr, StringConstraints, field_validator
 from sqlmodel import SQLModel
 
 from app.enumerations import Role
+from app.models import User
 
 
 # Création d'un utilisateur (POST)
