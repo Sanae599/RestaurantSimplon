@@ -78,7 +78,6 @@ def patch_utilisateur(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-
     check_admin_self(current_user, user_id)
     utilisateur = session.get(User, user_id)
 

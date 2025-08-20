@@ -30,7 +30,6 @@ def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
-
     user = get_user_by_email(form_data.username, session)
     if not user:
         raise HTTPException(status_code=400, detail="Utilisateur non trouvé")
@@ -77,7 +76,6 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 
 @router.post("/register")
 def register(user_data: UserCreate, session: Session = Depends(get_session)):
-
     # Vérif email déjà utilisé
     existing_user = session.exec(
         select(User).where(User.email == user_data.email)
