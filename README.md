@@ -4,8 +4,7 @@
 
 **RestaurantSimplon** est une API REST développée avec **FastAPI**, visant à digitaliser la gestion des commandes dans un restaurant traditionnellement basé sur le papier. Cette solution apporte un gain en efficacité, fiabilité et traçabilité des opérations quotidiennes.
 
-Projet réalisé dans le cadre d’un sprint de **3 semaines** (du 4 au 22 août 2025) par une équipe backend spécialisée, avec un focus sur la sécurité, la qualité du code, la conteneurisation et les bonnes pratiques DevOps.
-
+Projet réalisé dans le cadre d’un sprint de **3 semaines** (du 4 au 22 août 2025).
 ---
 
 ## 🚀 Fonctionnalités principales
