@@ -43,5 +43,13 @@ jobs:
           tags: |        # Tags attribués à l'image
             ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-sqlmodel:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-sqlmodel:${{ env.VERSION }} 
+#partie dev premier job
 
 
+#job deploie
+#docker pull
+#docker compose pull
+#docker compose -d
+#changer docker compose changer le . build
+#recup serveru et deploie avecagenr t
+#runner conteneur/docker compose
