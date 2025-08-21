@@ -10,4 +10,10 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 
 def get_session():
+    """
+    Crée et retourne une session SQLModel liée à l'engine configuré.
+
+    Returns:
+        Session: objet session SQLModel utilisable pour les transactions.
+    """
     return Session(engine)

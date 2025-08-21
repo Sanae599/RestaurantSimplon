@@ -17,37 +17,50 @@ from app.security import (
 
 router = APIRouter(prefix="/product", tags=["product"])
 
-
-# get all products
 @router.get("/", response_model=list[ProductRead])
 def lister_les_produits(
     session=Depends(get_session), current_user=Depends(get_current_user)
 ):
+    """
+    Récupère la liste de tous les produits.
+
+    - Accessible uniquement aux admins et employés.
+    - Retourne les informations principales des produits.
+    """
     check_admin_employee(current_user)
     produits = session.exec(select(Product)).all()
     return produits
 
-
-# get one product by id
 @router.get("/{product_id}", response_model=ProductRead)
 def lire_un_produit_id(
     product_id: int,
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
+    """
+    Récupère un produit par son ID.
+
+    - Vérifie que le produit existe, sinon lève une exception 404.
+    - Accessible uniquement aux admins et employés.
+    """
     produit = session.get(Product, product_id)
     check_product_exists(produit)
     check_admin_employee(current_user)
     return produit
 
-
-# add new product
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
 def creer_un_produit(
     product: ProductCreate,
     session=Depends(get_session),
     current_user=Depends(get_current_user),
 ):
+    """
+    Crée un nouveau produit.
+
+    - Accessible uniquement aux admins et employés.
+    - Vérifie qu’aucun autre produit avec le même nom n’existe déjà.
+    - Retourne le produit nouvellement créé.
+    """
     check_admin_employee(current_user)
     existing_product = session.exec(
         select(Product).where(Product.name == product.name)
@@ -74,31 +87,46 @@ def patch_product(
     session=Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    check_admin_employee(current_user)  # vérifier que le produit existe
+    """
+    Met à jour partiellement un produit existant.
+
+    - Accessible uniquement aux **admins** et **employés**.
+    - Vérifie que le produit existe.
+    - Vérifie qu’il n’y a pas de doublon de nom avec un autre produit.
+    - Retourne le produit mis à jour.
+    """
+    # Check que le produit existe
+    check_admin_employee(current_user)  
     produit = session.get(Product, product_id)
-    check_product_exists(
-        produit
-    )  # vérifier si un autre produit existe avec le meme nom
+    check_product_exists(produit)  
+
+    # Check si un autre produit existe avec le meme nom
     existing_product = session.exec(
         select(Product).where(Product.name == product.name)
     ).first()
     check_name_product_exists(existing_product)
-    # https://fastapi.tiangolo.com/fr/tutorial/body-updates/#partial-updates-with-patch
+
     update_data = product.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(produit, key, value)
+
     session.commit()
     session.refresh(produit)
     return produit
 
-
-# Supprimer un produit
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def supprimer_un_produit(
     product_id: int,
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
+    """
+    Supprime un produit par son ID.
+
+    - Accessible uniquement aux admins et employés.
+    - Vérifie que le produit existe avant suppression.
+    - Retourne un code 204 si la suppression est réussie.
+    """
     check_admin_employee(current_user)
     produit = session.get(Product, product_id)
     check_product_exists(produit)

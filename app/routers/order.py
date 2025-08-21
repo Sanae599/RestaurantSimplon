@@ -18,13 +18,17 @@ from app.security import get_current_user
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
-
-# Lister toutes les commandes — admin & employée
 @router.get("/", response_model=list[OrderReadWithItems])
 def lister_les_commandes(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère la liste de toutes les commandes.
+
+    - Accessible uniquement aux **admins** et **employés**.
+    - Retourne les commandes avec leurs articles associés.
+    """
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -49,15 +53,18 @@ def lister_les_commandes(
         result.append(dto)
     return result
 
-
-# Lire par date — client = seulement ses commandes ; staff = toutes
-# Lire par date — réservé staff
 @router.get("/by-date", response_model=list[OrderReadWithItems])
 def lire_commandes_par_date(
     date: dt_date,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère les commandes créées à une date donnée.
+
+    - Accessible uniquement aux **admins** et **employés**.
+    - Retourne les commandes avec leurs articles.
+    """
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -93,6 +100,12 @@ def lire_les_commandes_par_utilisateur(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère les commandes d’un utilisateur donné.
+
+    - Un **client** ne peut voir que ses propres commandes.
+    - Les **admins** et **employés** peuvent consulter celles de n’importe quel utilisateur.
+    """
     if current_user.role == Role.CLIENT and current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Accès interdit"
@@ -117,14 +130,18 @@ def lire_les_commandes_par_utilisateur(
         result.append(dto)
     return result
 
-
-# Lire par id commande — client = seulement sa commande ; staff = OK
 @router.get("/{order_id}", response_model=OrderReadWithItems)
 def lire_une_commande_par_orderid(
     order_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère une commande spécifique par son ID.
+
+    - Un client ne peut accéder qu’à ses propres commandes.
+    - Les admins et employés peuvent accéder à toutes les commandes.
+    """
     c = session.exec(
         select(Order)
         .where(Order.id == order_id)
@@ -159,6 +176,13 @@ def creer_une_commande(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Crée une nouvelle commande.
+
+    - Un **client** crée une commande uniquement pour lui-même.
+    - Les **admins** et **employés** peuvent créer une commande pour n’importe quel utilisateur existant.
+    - La commande doit contenir au moins un article.
+    """
     if not payload.items:
         raise HTTPException(
             status_code=422, detail="La commande doit contenir au moins un article."
@@ -211,14 +235,18 @@ def creer_une_commande(
     ]
     return dto
 
-
-# Supprimer — admin & employée
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 def supprimer_une_commande(
     order_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Supprime une commande par son ID.
+
+    - Accessible uniquement aux admins et employés.
+    - Retourne un code 204 si la suppression est réussie.
+    """
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -230,8 +258,6 @@ def supprimer_une_commande(
     session.delete(commande)
     session.commit()
 
-
-# Patch — admin & employée
 @router.patch("/{order_id}", response_model=OrderReadWithItems)
 def patch_commande(
     order_id: int,
@@ -239,6 +265,13 @@ def patch_commande(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Met à jour une commande existante (patch).
+
+    - Accessible uniquement aux admins et employés.
+    - Permet de modifier : utilisateur associé, statut, et articles de la commande.
+    - Recalcule automatiquement le montant total.
+    """
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -8,9 +8,21 @@ from app.enumerations import Category
 from app.models import Product
 
 # TEST LISTER LES PRODUITS
-
-
 def test_lister_les_produits_admin(client, produit, override_get_current_admin):
+    """
+    Vérifie qu'un administrateur peut lister tous les produits.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        produit (Product): Instance de produit préexistante pour test.
+        override_get_current_admin: Fixture qui simule un utilisateur admin.
+
+    Assertions:
+        - Le status code de la réponse est 200.
+        - La réponse est une liste de produits.
+        - La liste contient au moins un produit.
+        - Le premier produit a le même nom que le produit de test.
+    """
     response = client.get("/product/")
     assert response.status_code == 200
     data = response.json()
@@ -20,16 +32,34 @@ def test_lister_les_produits_admin(client, produit, override_get_current_admin):
 
 
 def test_lister_les_produits_client(client, produit, override_get_current_client):
+    """
+    Vérifie qu'un client n'a pas le droit de lister les produits.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        produit (Product): Instance de produit préexistante pour test.
+        override_get_current_client: Fixture qui simule un utilisateur client.
+
+    Assertions:
+        - Le status code de la réponse est 403 (interdit pour le client).
+    """
     response = client.get("/product/")
-    # Ici le client peut juste lire, donc 200 ou 403 selon ton endpoint
-    # Si tu veux interdire la liste pour le client, 403
     assert response.status_code == 403
 
 
 # TEST CREER UN PRODUIT
-
-
 def test_creer_un_produit_admin(client: TestClient, override_get_current_admin):
+    """
+    Vérifie qu'un administrateur peut créer un nouveau produit.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        override_get_current_admin: Fixture qui simule un utilisateur admin.
+
+    Assertions:
+        - Le status code de la réponse est 201 (créé).
+        - Le nom du produit retourné correspond au nom envoyé dans la requête.
+    """
     data = {
         "name": "Produit Test",
         "unit_price": 9.99,
@@ -45,6 +75,16 @@ def test_creer_un_produit_admin(client: TestClient, override_get_current_admin):
 
 
 def test_creer_un_produit_client(client: TestClient, override_get_current_client):
+    """
+    Vérifie qu'un client ne peut pas créer de produit.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        override_get_current_client: Fixture qui simule un utilisateur client.
+
+    Assertions:
+        - Le status code de la réponse est 403 (interdit pour le client).
+    """
     data = {
         "name": "Produit Test",
         "unit_price": 9.99,
@@ -57,12 +97,22 @@ def test_creer_un_produit_client(client: TestClient, override_get_current_client
     assert response.status_code == 403
 
 
-# TEST PATCH (mettre à jour) UN PRODUIT
-
-
+# TEST PATCH UN PRODUIT
 def test_patch_product_admin(
     client: TestClient, session: Session, override_get_current_admin
 ):
+    """
+    Vérifie qu'un administrateur peut mettre à jour un produit existant.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        session (Session): Session SQLAlchemy/SQLModel pour la DB.
+        override_get_current_admin: Fixture qui simule un utilisateur admin.
+
+    Assertions:
+        - Le status code de la réponse est 200.
+        - Les champs mis à jour (unit_price, stock) sont corrects dans la réponse.
+    """
     produit = Product(
         name="Produit Patch",
         unit_price=5.0,
@@ -85,6 +135,17 @@ def test_patch_product_admin(
 def test_patch_product_client(
     client: TestClient, session: Session, override_get_current_client
 ):
+    """
+    Vérifie qu'un client ne peut pas mettre à jour un produit.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        session (Session): Session SQLAlchemy/SQLModel pour la DB.
+        override_get_current_client: Fixture qui simule un utilisateur client.
+
+    Assertions:
+        - Le status code de la réponse est 403 (interdit pour le client).
+    """
     produit = Product(
         name="Produit Patch",
         unit_price=5.0,
@@ -102,11 +163,21 @@ def test_patch_product_client(
 
 
 # TEST SUPPRIMER UN PRODUIT
-
-
 def test_supprimer_un_produit_admin(
     client: TestClient, session: Session, override_get_current_admin
 ):
+    """
+    Vérifie qu'un administrateur peut supprimer un produit existant.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        session (Session): Session SQLAlchemy/SQLModel pour la DB.
+        override_get_current_admin: Fixture qui simule un utilisateur admin.
+
+    Assertions:
+        - Le status code de la réponse est 204 (supprimé).
+        - Le produit n'existe plus en base.
+    """
     produit = Product(
         name="Produit Delete",
         unit_price=1.0,
@@ -126,6 +197,17 @@ def test_supprimer_un_produit_admin(
 def test_supprimer_un_produit_client(
     client: TestClient, session: Session, override_get_current_client
 ):
+    """
+    Vérifie qu'un client ne peut pas supprimer un produit.
+
+    Args:
+        client (TestClient): Client FastAPI pour faire les requêtes.
+        session (Session): Session SQLAlchemy/SQLModel pour la DB.
+        override_get_current_client: Fixture qui simule un utilisateur client.
+
+    Assertions:
+        - Le status code de la réponse est 403 (interdit pour le client).
+    """
     produit = Product(
         name="Produit Delete",
         unit_price=1.0,

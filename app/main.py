@@ -16,12 +16,18 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 with Session(engine) as session:
     if __name__ == "__main__":
-        reset_db(session)  # vide les tables
-        add_fake_data(session)  # insère les données
+        reset_db(session)  
+        add_fake_data(session)
 
 
 @app.get("/")
 def read_root():
+    """
+    Endpoint racine de l'API.
+
+    Returns:
+        dict: Message indiquant que l'API fonctionne correctement.
+    """
     return {"message": "API RestauSimplon fonctionne bien"}
 
 

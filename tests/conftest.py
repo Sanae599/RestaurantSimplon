@@ -18,11 +18,17 @@ engine = create_engine(
 connection = engine.connect()
 SQLModel.metadata.create_all(connection)
 
-
-# Session pour les tests
 @pytest.fixture(name="session")
 def fixture_session():
-    # Lier la session à la connexion partagée
+    """
+    Fournit une session SQLModel liée à la base de données de test en mémoire.
+
+    Utilisation :
+        - Toutes les interactions avec la base de données dans les tests utilisent cette session.
+    
+    Yield :
+        - Une instance de Session SQLModel.
+    """
     with Session(bind=connection) as session:
         yield session
 
@@ -30,6 +36,17 @@ def fixture_session():
 # Fixtures utilisateurs
 @pytest.fixture
 def admin_user(session):
+    """
+    Crée et retourne un utilisateur avec le rôle ADMIN pour les tests.
+
+    Étapes :
+        1. Instancie un utilisateur avec rôle ADMIN et mot de passe hashé.
+        2. Ajoute l'utilisateur à la session et commit.
+        3. Rafraîchit l'objet pour obtenir l'ID.
+    
+    Yield :
+        - L'utilisateur ADMIN créé.
+    """
     user = User(
         first_name="Admin",
         last_name="User",
@@ -47,6 +64,17 @@ def admin_user(session):
 
 @pytest.fixture
 def employee_user(session):
+    """
+    Crée et retourne un utilisateur avec le rôle EMPLOYEE pour les tests.
+
+    Étapes :
+        1. Instancie un utilisateur avec rôle EMPLOYEE et mot de passe hashé.
+        2. Ajoute l'utilisateur à la session et commit.
+        3. Rafraîchit l'objet pour obtenir l'ID.
+
+    Yield :
+        - L'utilisateur EMPLOYEE créé.
+    """
     user = User(
         first_name="Employee",
         last_name="User",
@@ -64,6 +92,17 @@ def employee_user(session):
 
 @pytest.fixture
 def client_user(session):
+    """
+    Crée et retourne un utilisateur avec le rôle CLIENT pour les tests.
+
+    Étapes :
+        1. Instancie un utilisateur avec rôle CLIENT et mot de passe hashé.
+        2. Ajoute l'utilisateur à la session et commit.
+        3. Rafraîchit l'objet pour obtenir l'ID.
+
+    Yield :
+        - L'utilisateur CLIENT créé.
+    """
     user = User(
         first_name="Client",
         last_name="User",
@@ -82,6 +121,16 @@ def client_user(session):
 # Fixture client FastAPI
 @pytest.fixture(name="client")
 def fixture_client(session):
+    """
+    Fournit un client FastAPI configuré pour utiliser la session de test.
+
+    Étapes :
+        1. Redéfinit la dépendance get_session pour renvoyer la session de test.
+        2. Crée un TestClient pour l'application FastAPI.
+    
+    Yield :
+        - Une instance de TestClient pour envoyer des requêtes HTTP aux routes.
+    """
     def get_session_override():
         return session
 
@@ -93,6 +142,15 @@ def fixture_client(session):
 # Override get_current_user
 @pytest.fixture
 def override_get_current_admin(admin_user):
+    """
+    Override la dépendance get_current_user pour retourner l'ADMIN.
+
+    Utilisation :
+        - Permet de simuler qu'un utilisateur ADMIN est connecté lors des tests.
+
+    Yield :
+        - Aucun objet, juste l'override actif pendant le test.
+    """
     from app.routers.user import get_current_user as original
 
     app.dependency_overrides[original] = lambda: admin_user
@@ -102,6 +160,16 @@ def override_get_current_admin(admin_user):
 
 @pytest.fixture
 def override_get_current_employee(employee_user):
+    """
+    Override la dépendance get_current_user pour retourner l'EMPLOYEE.
+
+    Utilisation :
+        - Permet de simuler qu'un utilisateur EMPLOYEE est connecté lors des tests.
+
+    Yield :
+        - Aucun objet, juste l'override actif pendant le test.
+    """
+
     from app.routers.user import get_current_user as original
 
     app.dependency_overrides[original] = lambda: employee_user
@@ -111,6 +179,15 @@ def override_get_current_employee(employee_user):
 
 @pytest.fixture
 def override_get_current_client(client_user):
+    """
+    Override la dépendance get_current_user pour retourner le CLIENT.
+
+    Utilisation :
+        - Permet de simuler qu'un utilisateur CLIENT est connecté lors des tests.
+
+    Yield :
+        - Aucun objet, juste l'override actif pendant le test.
+    """
     from app.routers.user import get_current_user as original
 
     app.dependency_overrides[original] = lambda: client_user
@@ -121,6 +198,17 @@ def override_get_current_client(client_user):
 # Fixture produit
 @pytest.fixture
 def produit(session):
+    """
+    Crée et retourne un produit pour les tests.
+
+    Étapes :
+        1. Instancie un produit avec nom, prix, catégorie, description et stock.
+        2. Ajoute le produit à la session et commit.
+        3. Rafraîchit l'objet pour obtenir l'ID.
+
+    Yield :
+        - Le produit créé.
+    """
     produit = Product(
         name="Produit Test",
         unit_price=10.0,
@@ -137,6 +225,17 @@ def produit(session):
 # Nettoyage après chaque test
 @pytest.fixture(autouse=True)
 def clean_db(session):
+    """
+    Nettoie la base de données après chaque test.
+
+    Étapes :
+        1. Effectue un rollback pour annuler les modifications non commit.
+        2. Supprime toutes les lignes de toutes les tables.
+        3. Commit pour appliquer le nettoyage.
+
+    Utilisation :
+        - Fixture autouse=True, donc exécutée automatiquement pour chaque test.
+    """
     yield
     session.rollback()
     for table in reversed(SQLModel.metadata.sorted_tables):

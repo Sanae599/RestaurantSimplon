@@ -4,13 +4,22 @@ from typing import List, Optional
 from sqlalchemy import Column, ForeignKey
 from sqlmodel import Field, Relationship, SQLModel
 
-# https://docs-sqlalchemy.readthedocs.io/ko/latest/orm/cascades.html
-# https://stackoverflow.com/questions/5033547/sqlalchemy-cascade-delete
-# https://github.com/fastapi/sqlmodel/issues/213?utm_source=chatgpt.com%3Futm_source%3Dchatgpt.com
-
-
-# USER
 class User(SQLModel, table=True):
+    """
+    Représente un utilisateur de l'application.
+
+    Attributs:
+        id (int, optional): Identifiant unique de l'utilisateur.
+        first_name (str): Prénom de l'utilisateur.
+        last_name (str): Nom de l'utilisateur.
+        email (str): Adresse email unique.
+        role (str): Rôle de l'utilisateur ('admin', 'employee', 'client').
+        password_hashed (str): Mot de passe hashé.
+        address_user (str, optional): Adresse de l'utilisateur.
+        phone (str, optional): Numéro de téléphone.
+        created_at (datetime): Date de création de l'utilisateur.
+        orders (List[Order]): Liste des commandes associées à l'utilisateur.
+    """
     id: Optional[int] = Field(default=None, primary_key=True)
     first_name: str
     last_name: str
@@ -26,8 +35,20 @@ class User(SQLModel, table=True):
     orders: List["Order"] = Relationship(back_populates="user", cascade_delete=True)
 
 
-# PRODUCT
 class Product(SQLModel, table=True):
+    """
+    Représente un produit disponible à la vente.
+
+    Attributs:
+        id (int, optional): Identifiant unique du produit.
+        name (str): Nom du produit.
+        unit_price (float): Prix unitaire.
+        category (str): Catégorie du produit (entrée, plat, dessert, etc.).
+        description (str, optional): Description du produit.
+        stock (int): Quantité en stock.
+        created_at (datetime): Date de création du produit.
+        order_items (List[OrderItem]): Liste des lignes de commande associées.
+    """
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     unit_price: float
@@ -37,15 +58,25 @@ class Product(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc), nullable=False
     )
-    # sku: Optional[str] = Field(default=None, index=True)  #  ajout de SKU
 
     order_items: List["OrderItem"] = Relationship(
         back_populates="product", cascade_delete=True
     )
 
-
-# ORDER
 class Order(SQLModel, table=True):
+    """
+    Représente une commande effectuée par un utilisateur.
+
+    Attributs:
+        id (int, optional): Identifiant unique de la commande.
+        user_id (int): Identifiant de l'utilisateur ayant passé la commande.
+        total_amount (float): Montant total de la commande.
+        status (str): Statut de la commande (en préparation, prête, servie).
+        created_at (datetime): Date de création de la commande.
+        user (User, optional): Utilisateur associé.
+        delivery (Delivery, optional): Livraison associée.
+        order_items (List[OrderItem]): Liste des produits commandés.
+    """
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id")
     total_amount: float
@@ -61,7 +92,7 @@ class Order(SQLModel, table=True):
         sa_relationship_kwargs={
             # delete all children
             "cascade": "all, delete-orphan",
-            # 1 delivery appartien à 1 seul order
+            # 1 delivery appartient à 1 seul order
             "single_parent": True,
             # relation one one
             "uselist": False,
@@ -72,9 +103,18 @@ class Order(SQLModel, table=True):
         back_populates="order", cascade_delete=True
     )
 
-
-# DELIVERY
 class Delivery(SQLModel, table=True):
+    """
+    Représente une livraison associée à une commande.
+
+    Attributs:
+        id (int, optional): Identifiant unique de la livraison.
+        order_id (int, optional): Identifiant de la commande associée.
+        address_delivery (str): Adresse de livraison.
+        status (str): Statut de la livraison (en cours, délivrée).
+        created_at (datetime): Date de création de la livraison.
+        order (Order): Commande associée.
+    """
     id: Optional[int] = Field(default=None, primary_key=True)
     order_id: Optional[int] = Field(foreign_key="order.id", unique=True, nullable=False)
     address_delivery: str
@@ -85,9 +125,18 @@ class Delivery(SQLModel, table=True):
 
     order: Order = Relationship(back_populates="delivery")
 
-
-# ORDER ITEMS
 class OrderItem(SQLModel, table=True):
+    """
+    Représente un produit spécifique dans une commande (ligne de commande).
+
+    Attributs:
+        order_id (int): Identifiant de la commande.
+        product_id (int): Identifiant du produit.
+        quantity (int): Quantité commandée.
+        created_at (datetime): Date de création de la ligne de commande.
+        order (Order, optional): Commande associée.
+        product (Product, optional): Produit associé.
+    """
     order_id: int = Field(
         sa_column=Column(ForeignKey("order.id", ondelete="CASCADE"), primary_key=True)
     )

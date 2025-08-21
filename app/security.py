@@ -22,18 +22,48 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 
 
 def hash_password(password: str) -> str:
+    """
+    Hash un mot de passe en utilisant bcrypt.
+
+    Args:
+        password (str): Le mot de passe en clair.
+
+    Returns:
+        str: Le mot de passe hashé.
+    """
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
     return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Vérifie qu'un mot de passe en clair correspond à un mot de passe hashé.
+
+    Args:
+        plain_password (str): Le mot de passe en clair.
+        hashed_password (str): Le mot de passe hashé.
+
+    Returns:
+        bool: True si le mot de passe correspond, False sinon.
+    """
     return bcrypt.checkpw(
         plain_password.encode("utf-8"), hashed_password.encode("utf-8")
     )
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    Crée un JWT pour l'accès avec expiration.
+
+    Args:
+        data (dict): Les données à encoder dans le token (ex: {"sub": email}).
+        expires_delta (timedelta | None): Durée de validité du token. 
+            Si None, la valeur par défaut ACCESS_TOKEN_EXPIRE_MINUTES est utilisée.
+
+    Returns:
+        str: Le token JWT encodé.
+    """
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
         expires_delta
@@ -46,6 +76,17 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 def create_refresh_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    Crée un JWT de rafraîchissement avec expiration.
+
+    Args:
+        data (dict): Les données à encoder dans le token.
+        expires_delta (timedelta | None): Durée de validité du token. 
+            Si None, la valeur par défaut REFRESH_TOKEN_EXPIRE_DAYS est utilisée.
+
+    Returns:
+        str: Le token JWT encodé.
+    """
     expire = datetime.now(timezone.utc) + (
         expires_delta if expires_delta else timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     )
@@ -61,6 +102,19 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login/token")
 def get_current_user(
     token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)
 ) -> User:
+    """
+    Récupère l'utilisateur actuel à partir du token JWT.
+
+    Args:
+        token (str): Le token JWT fourni via OAuth2.
+        session (Session): Session SQLAlchemy/SQLModel.
+
+    Raises:
+        HTTPException: Si le token est invalide ou si l'utilisateur n'existe pas.
+
+    Returns:
+        User: L'utilisateur authentifié.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Impossible de valider les informations d'authentification",
@@ -83,6 +137,15 @@ def get_current_user(
 
 
 def check_admin(current_user):
+    """
+    Vérifie que l'utilisateur est un administrateur.
+
+    Args:
+        current_user (User): L'utilisateur à vérifier.
+
+    Raises:
+        HTTPException: Si l'utilisateur n'est pas un admin.
+    """
     if current_user.role != Role.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Vous n'etes pas admin"
@@ -90,6 +153,15 @@ def check_admin(current_user):
 
 
 def check_admin_employee(current_user):
+    """
+    Vérifie que l'utilisateur est un administrateur ou un employé.
+
+    Args:
+        current_user (User): L'utilisateur à vérifier.
+
+    Raises:
+        HTTPException: Si l'utilisateur n'est ni admin ni employé.
+    """
     if current_user.role not in [Role.ADMIN, Role.EMPLOYEE]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -98,7 +170,15 @@ def check_admin_employee(current_user):
 
 
 def check_email_exists(existing_user):
-    # Vérif email déjà utilisé
+    """
+    Vérifie si un email est déjà utilisé.
+
+    Args:
+        existing_user (User | None): L'utilisateur trouvé avec l'email.
+
+    Raises:
+        HTTPException: Si l'email est déjà enregistré.
+    """
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -107,6 +187,16 @@ def check_email_exists(existing_user):
 
 
 def check_admin_self(current_user, user_id):
+    """
+    Vérifie qu'un utilisateur peut modifier son propre profil ou qu'il est admin.
+
+    Args:
+        current_user (User): L'utilisateur actuel.
+        user_id (int): L'ID de l'utilisateur à modifier.
+
+    Raises:
+        HTTPException: Si l'utilisateur n'est ni admin ni propriétaire du profil.
+    """
     if current_user.role != Role.ADMIN and current_user.id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -115,11 +205,29 @@ def check_admin_self(current_user, user_id):
 
 
 def check_user_exists(utilisateur):
+    """
+    Vérifie que l'utilisateur existe.
+
+    Args:
+        utilisateur (User | None): L'utilisateur à vérifier.
+
+    Raises:
+        HTTPException: Si l'utilisateur n'existe pas.
+    """
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
 
 
 def check_name_product_exists(existing_product):
+    """
+    Vérifie si un produit existe déjà par son nom.
+
+    Args:
+        existing_product (Product | None): Produit trouvé.
+
+    Raises:
+        HTTPException: Si le produit existe déjà.
+    """
     if existing_product:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Produit déja existant"
@@ -127,5 +235,14 @@ def check_name_product_exists(existing_product):
 
 
 def check_product_exists(product):
+    """
+    Vérifie qu'un produit existe.
+
+    Args:
+        product (Product | None): Produit à vérifier.
+
+    Raises:
+        HTTPException: Si le produit n'existe pas.
+    """
     if not product:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
