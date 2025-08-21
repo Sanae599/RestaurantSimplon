@@ -35,8 +35,4 @@ services:
       - .:/app
 
 volumes:
-<<<<<<< HEAD
-  pg_data: 
-=======
   pg_data:
->>>>>>> e22fd4310173f3d31e026583f25eb34cf7355497
