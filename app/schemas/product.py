@@ -38,7 +38,7 @@ class ProductCreate(SQLModel):
         Valide que le prix unitaire est strictement supérieur à 0.
         """
         if value <= 0:
-            raise ValueError("Le prix doit être sup. à 0€")
+            raise ValueError("Le prix doit être sup à 0€")
         return value
 
     @field_validator("stock")
@@ -47,7 +47,7 @@ class ProductCreate(SQLModel):
         Valide que le stock est supérieur ou égal à 0.
         """
         if value < 0:
-            raise ValueError("Le stock ne peut pas être inf. à 0.")
+            raise ValueError("Le stock ne peut pas être inf à 0.")
         return value
 
 
