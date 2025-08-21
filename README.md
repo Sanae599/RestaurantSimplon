@@ -62,7 +62,7 @@ API accessible sur : http://localhost:8000
 
 Documentation Swagger : http://localhost:8000/docs
 
-🧪 Tests & Qualité
+### 🧪 Tests & Qualité
 
 * Tests unitaires avec pytest
 
@@ -72,7 +72,7 @@ Documentation Swagger : http://localhost:8000/docs
 
 * Linting : ruff, black
 
-🔄 Pipeline CI/CD
+### 🔄 Pipeline CI/CD
 
 Pipeline automatisé avec GitHub Actions :
 
@@ -84,10 +84,6 @@ Pipeline automatisé avec GitHub Actions :
 
     📥 Déploiement automatique (env. staging/production)
 
-🧪 Documentation
+### 🧪 Documentation
 
     Swagger UI : /docs
-
-    Redoc : /redoc
-
-    Documentation fonctionnelle dans le dossier /docs
