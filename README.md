@@ -61,6 +61,7 @@ Projet réalisé dans le cadre d’un sprint de **3 semaines** (du 4 au 22 août
 API accessible sur : http://localhost:8000
 
 Documentation Swagger : http://localhost:8000/docs
+
 🧪 Tests & Qualité
 
 * Tests unitaires avec pytest
