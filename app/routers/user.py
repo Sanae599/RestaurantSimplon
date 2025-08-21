@@ -17,39 +17,51 @@ from app.security import (
 
 router = APIRouter(prefix="/user", tags=["user"])
 
-
-# Lister tous les utilisateurs
 @router.get("/", response_model=list[UserRead])
 def lister_les_utilisateurs(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère la liste de tous les utilisateurs.
+
+    - Accessible uniquement aux admins.
+    """
     check_admin(current_user)
     utilisateurs = session.exec(select(User)).all()
     return utilisateurs
 
-
-# Lire un utilisateur par son id
 @router.get("/{user_id}", response_model=UserRead)
 def lire_un_utilisateur(
     user_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Récupère un utilisateur par son ID.
+
+    - Accessible aux admins et employés.
+    - Retourne une erreur 404 si l’utilisateur n’existe pas.
+    """
     check_admin_employee(current_user)
     utilisateur = session.get(User, user_id)
     if not utilisateur:
         raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
     return utilisateur
 
-
-# Créer un nouvel utilisateur
 @router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def creer_un_utilisateur(
     user: UserCreate,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Crée un nouvel utilisateur avec le rôle client par défaut.
+
+    - Accessible uniquement aux admins.
+    - Vérifie que l’adresse e-mail n’est pas déjà utilisée.
+    - Retourne l’utilisateur nouvellement créé.
+    """
     check_admin(current_user)
     existing_user = session.exec(select(User).where(User.email == user.email)).first()
     check_email_exists(existing_user)
@@ -69,8 +81,6 @@ def creer_un_utilisateur(
     session.refresh(nouvel_utilisateur)
     return nouvel_utilisateur
 
-
-# Modifier partiellement un utilisateur (PATCH)
 @router.patch("/{user_id}", response_model=UserRead)
 def patch_utilisateur(
     user_id: int,
@@ -78,6 +88,14 @@ def patch_utilisateur(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Met à jour partiellement un utilisateur (PATCH).
+
+    - Accessible à l’utilisateur lui-même ou à un admin.
+    - Un employé ne peut pas modifier le rôle.
+    - Si le mot de passe est mis à jour, il est automatiquement hashé.
+    - Retourne l’utilisateur mis à jour.
+    """
     check_admin_self(current_user, user_id)
     utilisateur = session.get(User, user_id)
 
@@ -98,14 +116,18 @@ def patch_utilisateur(
     session.refresh(utilisateur)
     return utilisateur
 
-
-# Supprimer un utilisateur
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def supprimer_un_utilisateur(
     user_id: int,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    """
+    Supprime un utilisateur par son ID.
+
+    - Accessible à l’utilisateur lui-même ou à un admin.
+    - Retourne un code 204 si la suppression est réussie.
+    """
     check_admin_self(current_user, user_id)
     utilisateur = session.get(User, user_id)
     if not utilisateur:

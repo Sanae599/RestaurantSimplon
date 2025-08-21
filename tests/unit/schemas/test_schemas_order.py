@@ -23,11 +23,7 @@ def test_order_item_quantity_invalid(bad_qty):
     with pytest.raises(ValidationError) as exc:
         OrderItemCreateInOrder(product_id=1, quantity=bad_qty)
 
-    # Message défini dans notre validator:
-    #   "La quantité doit être ≥ 1."
     assert "La quantité doit être ≥ 1." in str(exc.value)
-
-
 # Cas invalides (0, -1, -5) → rejetés correctement
 
 

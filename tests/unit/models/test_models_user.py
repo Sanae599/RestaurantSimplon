@@ -7,6 +7,21 @@ from app.models import User
 
 
 def test_user_types_valide():
+    """
+    Vérifie que la création d'un utilisateur avec tous les champs valides produit
+    des attributs du type attendu.
+
+    Étapes du test :
+        1. Créer un utilisateur avec tous les champs obligatoires renseignés.
+        2. Vérifier que chaque attribut a le type attendu.
+        3. Vérifier que l'email contient un '@'.
+
+    Assertions :
+        - id est un int
+        - first_name, last_name, email, role, password_hashed, address_user, phone sont des str
+        - email contient '@'
+        - created_at est un datetime
+    """
     user = User(
         id=1,
         first_name="AA",
@@ -32,7 +47,19 @@ def test_user_types_valide():
 
 
 def test_user_optional_fields_none():
-    # Check champs optional
+    """
+    Vérifie que les champs optionnels d'un utilisateur peuvent être None.
+
+    Étapes du test :
+        1. Créer un utilisateur en laissant address_user et phone à None.
+        2. Vérifier que les champs optionnels sont bien None.
+        3. Vérifier que l'id par défaut est None.
+
+    Assertions :
+        - address_user est None
+        - phone est None
+        - id est None
+    """
     user = User(
         address_user=None,
         phone=None,

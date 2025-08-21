@@ -20,16 +20,38 @@ router = APIRouter(prefix="/login", tags=["login"])
 
 
 def get_user_by_email(email: str, session: Session) -> User | None:
+    """
+    Récupère un utilisateur en base de données à partir de son email.
+
+    Args:
+        email (str): L'email de l'utilisateur recherché.
+        session (Session): La session de base de données.
+
+    Returns:
+        User | None: L'utilisateur correspondant ou None si introuvable.
+    """
     statement = select(User).where(User.email == email)
     result = session.exec(statement)
     return result.first()
 
-
-@router.post("/token")  # tokenaccess
+@router.post("/token") 
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):
+    """
+    Authentifie un utilisateur et génère un access token et un refresh token.
+
+    Args:
+        form_data (OAuth2PasswordRequestForm): Formulaire contenant l'email (username) et le mot de passe.
+        session (Session): La session de base de données.
+
+    Raises:
+        HTTPException: Si l'utilisateur n'existe pas ou si le mot de passe est incorrect.
+
+    Returns:
+        dict: Un dictionnaire contenant l'access token et le refresh token.
+    """
     user = get_user_by_email(form_data.username, session)
     if not user:
         raise HTTPException(status_code=400, detail="Utilisateur non trouvé")
@@ -41,10 +63,23 @@ def login_for_access_token(
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@router.post("/refresh-token")  # tokenrefresh
+@router.post("/refresh-token")
 def refresh_access_token(
     refresh_token: str = Body(..., embed=True), session: Session = Depends(get_session)
 ):
+    """
+    Rafraîchit un access token à partir d’un refresh token valide.
+
+    Args:
+        refresh_token (str): Le refresh token envoyé par l'utilisateur.
+        session (Session): La session de base de données.
+
+    Raises:
+        HTTPException: Si le token est expiré, invalide, ou si l'utilisateur n'existe pas.
+
+    Returns:
+        dict: Un dictionnaire contenant un nouveau access token et son type.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="refresh token expiré ou invalide",
@@ -71,12 +106,33 @@ def refresh_access_token(
 
 @router.get("/me")
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    """
+    Récupère les informations de l'utilisateur actuellement authentifié.
 
+    Args:
+        current_user (User): L'utilisateur authentifié, récupéré via le token.
+
+    Returns:
+        User: Les informations de l'utilisateur connecté.
+    """
+    return current_user
 
 @router.post("/register")
 def register(user_data: UserCreate, session: Session = Depends(get_session)):
-    # Vérif email déjà utilisé
+    """
+    Inscrit un nouvel utilisateur dans la base de données.
+
+    Args:
+        user_data (UserCreate): Données fournies par l'utilisateur (nom, email, mot de passe, etc.).
+        session (Session): La session de base de données.
+
+    Raises:
+        HTTPException: Si l'email est déjà enregistré.
+
+    Returns:
+        dict: Un message de succès et les informations de l'utilisateur créé.
+    """
+    # Check email déjà utilisé
     existing_user = session.exec(
         select(User).where(User.email == user_data.email)
     ).first()

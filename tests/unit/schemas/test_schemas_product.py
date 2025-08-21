@@ -7,8 +7,6 @@ from app.enumerations import Category
 from app.schemas.product import ProductCreate, ProductUpdate
 
 # Tests ProductCreate
-
-
 def test_product_create_valid():
     """
     Cas valide : prix > 0 et stock >= 0
@@ -60,8 +58,6 @@ def test_product_create_invalid_stock(bad_stock):
 
 
 # Tests ProductUpdate
-
-
 def test_product_update_valid_partial():
     """
     Cas valide : mise à jour partielle avec prix et stock corrects

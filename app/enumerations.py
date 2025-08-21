@@ -1,5 +1,15 @@
-from enum import Enum
+"""
+Définitions des énumérations utilisées dans l'application.
 
+Ces classes Enum représentent des valeurs fixes pour :
+- Role : les rôles des utilisateurs (client, employé, admin).
+- Status : le statut d'une commande (en préparation, prête, servie).
+- StatusDelivery : le statut d'une livraison (en cours, délivrée).
+- Category : les catégories de produits (entrée, plat principal, dessert, boisson, snack, menu enfant).
+
+Les énumérations héritent de `str` pour faciliter leur utilisation avec SQLModel et Pydantic.
+"""
+from enum import Enum
 
 class Role(str, Enum):
     CLIENT = "client"
