@@ -1,0 +1,73 @@
+name: CI Pipeline   # Nom affiché dans GitHub Actions
+
+on:
+  push:
+    branches: [ "main", "develop", "branch_azhar" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  quality-and-tests:     # Nom du job 
+    runs-on: ubuntu-latest   # L'environnement d'exécution (machine virtuelle Ubuntu)
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      REFRESH_TOKEN_EXPIRE_DAYS: "7"
+
+    steps:
+      # ---- Récupération du code source ----
+      - name: Checkout code
+        uses: actions/checkout@v4  # Télécharge le code du repo dans la VM GitHub
+
+      # ---- Installation de Python ----
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"   # Version de Python utilisée pour exécuter le job
+
+      # ---- Installation des dépendances ----
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip   # Mise à jour de pip
+          pip install -r requirements.txt       # Installe les dépendances de prod
+
+      # ---- Vérification de la qualité du code ----
+      - name: Run black (format check)
+        run: black .   # Vérifie que le code est bien formaté (sans le modifier)
+
+      - name: Run flake8 (lint)
+        run: flake8 .        # Analyse statique du code (PEP8, erreurs, variables inutilisées...)
+
+      - name: Run isort (imports check)
+        run: isort .   # Vérifie que les imports sont bien triés
+
+      - name: Run mypy (types check)
+        run: mypy .         # Vérifie la cohérence des types statiques dans le code
+
+      # ---- Lancement des tests ----
+      - name: Run pytest
+        run: pytest --maxfail=1 --disable-warnings --cov=app --cov-report=xml --cov-fail-under=60
+        # --maxfail=1         : stoppe au 1er test échoué
+        # --disable-warnings  : masque les warnings pour plus de lisibilité
+        # --cov=app           : calcule la couverture de code du dossier "app/"
+        # --cov-report=xml    : génère un rapport de couverture en XML (utile pour Codecov)
+        # --cov-fail-under=60 : taux de coverage dépasse 60%
+
+
+      - name: Export OpenAPI (Swagger)
+        run: python export_openapi.py
+          
+        env:
+          OPENAPI_OUT: openapi.json
+
+          #Pour récupérer la doc depuis le github 
+      - name: Upload artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: |
+            coverage.xml
+            openapi.json

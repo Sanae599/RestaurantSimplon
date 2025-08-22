@@ -1,0 +1,237 @@
+import random
+
+from faker import Faker
+from sqlalchemy import text
+
+from app.enumerations import Category, Role, Status, StatusDelivery
+from app.models import Delivery, Order, OrderItem, Product, User
+from app.security import hash_password
+
+# créee une instance de Faker
+fake = Faker()
+fake.unique.clear()
+Faker.seed(0)
+random.seed(0)
+
+
+def generate_fr_phone():
+    """
+    Génère un numéro de téléphone français factice commençant par 0 suivi de 9 chiffres aléatoires.
+
+    Returns:
+        str: Numéro de téléphone français valide.
+    """
+    return "0" + "".join(str(random.randint(0, 9)) for _ in range(9))
+
+
+def remove_dot(text):
+    """
+    Supprime tous les points dans une chaîne de caractères et supprime le point final s'il existe.
+
+    Args:
+        text (str): La chaîne à nettoyer.
+
+    Returns:
+        str: Chaîne nettoyée sans points.
+    """
+    return text.rstrip(".").replace(".", "")
+
+
+def create_fake_users(n):
+    """
+    Génère une liste d'utilisateurs factices, incluant un utilisateur administrateur.
+
+    Args:
+        n (int): Nombre d'utilisateurs à générer en plus de l'administrateur.
+
+    Returns:
+        list[User]: Liste d'instances User.
+    """
+    users = []
+    user_data_admin = User(
+        first_name="admin",
+        last_name="admin",
+        email=fake.unique.email(),
+        role=Role.ADMIN,
+        password_hashed=hash_password("admin"),
+        address_user=fake.unique.address(),
+        phone=generate_fr_phone(),
+        created_at=fake.date_time(),
+    )
+    users.append(user_data_admin)
+
+    for _ in range(n):
+        user_data = User(
+            first_name=fake.first_name(),
+            last_name=fake.last_name(),
+            email=fake.unique.email(),
+            role=random.choice(list(Role)).value,
+            password_hashed=hash_password(fake.password()),
+            address_user=fake.unique.address(),
+            phone=generate_fr_phone(),
+            created_at=fake.date_time(),
+        )
+        users.append(user_data)
+
+    return users
+
+
+def create_fake_products(n):
+    """
+    Génère une liste de produits factices.
+
+    Args:
+        n (int): Nombre de produits à générer.
+
+    Returns:
+        list[Product]: Liste d'instances Product.
+    """
+    products = []
+    for _ in range(n):
+        product_data = Product(
+            name=fake.word().capitalize(),
+            # prix entre 10€ et 100€ avec deux chiffres apres la virgule
+            unit_price=round(
+                random.uniform(10, 100), 2
+            ),  
+            category=random.choice(list(Category)).value,
+            description=remove_dot(fake.text(max_nb_chars=50)),
+            # stock entre 10 et 100 unités
+            stock=random.randint(10, 100),  
+            created_at=fake.date_time(),
+        )
+        products.append(product_data)
+    return products
+
+
+def create_fake_deliveries(orders, n):
+    """
+    Génère des livraisons factices pour des commandes existantes.
+
+    Args:
+        orders (list[Order]): Liste des commandes existantes.
+        n (int): Nombre de livraisons à générer.
+
+    Returns:
+        list[Delivery]: Liste d'instances Delivery.
+    """
+    deliveries = []
+    selected_order = random.sample(orders, k=min(n, len(orders)))
+    for order in selected_order:
+        delivery_data = Delivery(
+            order_id=order.id,
+            address_delivery=fake.address(),
+            status=random.choice(list(StatusDelivery)).value,
+            created_at=fake.date_time(),
+        )
+        deliveries.append(delivery_data)
+    return deliveries
+
+
+def create_fake_orders(users, n):
+    """
+    Génère des commandes factices pour des utilisateurs existants.
+
+    Args:
+        users (list[User]): Liste des utilisateurs.
+        n (int): Nombre de commandes à générer.
+
+    Returns:
+        list[Order]: Liste d'instances Order.
+    """
+    orders = []
+    for _ in range(n):
+        user = random.choice(users)
+        order_data = Order(
+            user_id=user.id,
+            total_amount=0,
+            status=random.choice(list(Status)).value,
+            created_at=fake.date_time(),
+        )
+        orders.append(order_data)
+    return orders
+
+
+def create_fake_order_items(orders, products):
+    """
+    Génère des items de commandes factices pour les commandes existantes
+    et calcule le montant total de chaque commande.
+
+    Args:
+        orders (list[Order]): Liste des commandes existantes.
+        products (list[Product]): Liste des produits existants.
+
+    Returns:
+        list[OrderItem]: Liste d'instances OrderItem.
+    """
+    order_items = []
+    for order in orders:
+        selected_products = random.sample(products, k=random.randint(1, 3))
+        total_amount = 0
+
+        for product in selected_products:
+            quantity = random.randint(1, 5)
+            order_item_data = OrderItem(
+                order_id=order.id,
+                product_id=product.id,
+                quantity=quantity,
+                created_at=fake.date_time(),
+            )
+
+            order_items.append(order_item_data)
+            total_amount += quantity * product.unit_price
+        order.total_amount = round(total_amount, 2)
+    return order_items
+
+
+def reset_db(session):
+    """
+    Supprime toutes les données des tables User, Product, Order, OrderItem et Delivery,
+    puis réinitialise les séquences d'ID pour recommencer à 1.
+
+    Args:
+        session: Session SQLAlchemy active.
+    """
+    session.query(OrderItem).delete()  # dépend de Order et Product
+    session.query(Delivery).delete()  # dépend de Order
+    session.query(Order).delete()  # maintenant on peut supprimer Order
+    session.query(Product).delete()  # dépend d'aucune table
+    session.query(User).delete()  # dépend d'aucune table
+    session.commit()
+    # Liste des tables pour lesquelles on veut reset la séquence
+    tables = ["user", "product", "order", "delivery"]
+
+    for table in tables:
+        seq_name = f"{table}_id_seq"
+        session.execute(text(f"ALTER SEQUENCE {seq_name} RESTART WITH 1"))
+
+    session.commit()
+
+
+def add_fake_data(session):
+    """
+    Ajoute des données factices dans la base : utilisateurs, produits,
+    commandes, items de commandes et livraisons.
+
+    Args:
+        session: Session SQLAlchemy active.
+    """
+    users = create_fake_users(5)
+    products = create_fake_products(10)
+
+    session.add_all(users + products)
+    session.commit()  # Pour générer les IDs
+
+    orders = create_fake_orders(users, 7)
+    session.add_all(orders)
+    session.commit()
+
+    order_items = create_fake_order_items(orders, products)
+    session.add_all(order_items)
+    session.commit()
+    session.add_all(orders)
+    session.commit()
+
+    deliveries = create_fake_deliveries(orders, 3)
+    session.add_all(deliveries)
+    session.commit()
